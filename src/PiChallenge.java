@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import Network.*;
+import Graphics.Window;
 
 public class PiChallenge {
 
@@ -33,7 +34,9 @@ public class PiChallenge {
 	}
 */
 	
-	public static void main() {;
+	
+	/*
+	public static void main(String[] args) {
 		Server server = new Server();
 		try {
 			(new Thread(server)).start();
@@ -47,6 +50,11 @@ public class PiChallenge {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+	}
+	*/
+	public static void main(String[] args) {
+		Window window = new Window();
 		
 	}
 }
