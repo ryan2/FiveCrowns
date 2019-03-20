@@ -1,12 +1,16 @@
 package Network;
 import java.io.*;
 import java.net.*;
+import java.util.List;
 
 
 
 public class Server implements Runnable {
 
 	private ServerSocket server;
+	private static int players = 0;
+	private static int i=0;
+	private static boolean ready;
 	
 	public void run() {
 		try {
@@ -17,11 +21,31 @@ public class Server implements Runnable {
 		}
 	}
 	
+	
+	public int getPlayers() {
+		while (!ready||players==0) {
+		}
+		return players;
+	}
 	public void start(int port) throws IOException {
 		server = new ServerSocket(port);
-		while (true) {
-			System.out.println("Friend!");
-			new ClientHandler(server.accept()).start();
+		ready=false;
+		server.setSoTimeout(5000);
+		while (!ready||players==0) {
+			if (players<7) {
+				try {
+					new ClientHandler(server.accept()).start();
+					players++;
+					i++;
+				}
+				catch (java.net.SocketTimeoutException e) {
+					e.printStackTrace();
+				}
+			}
+			if (players>0&&i==0) {
+				System.out.println("Setting to True");
+				ready = true;
+			}
 		}
 	}
 	
@@ -45,7 +69,16 @@ public class Server implements Runnable {
 				
 				String inputLine;
 				while ((inputLine = in.readLine())!=null) {
-					out.println("Copy");
+					if (inputLine.contentEquals("Ready")){
+						i--;
+						int k = 0;
+						while (!ready) {
+							System.out.println("");
+							}
+					}
+					else {
+					}
+					
 				}
 				in.close();
 				out.close();

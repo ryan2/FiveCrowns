@@ -1,5 +1,7 @@
 package Network;
+import Graphics.Window;
 import java.io.*;
+
 import java.net.*;
 
 public class Client implements Runnable{
@@ -7,10 +9,12 @@ public class Client implements Runnable{
 	private Socket clientSocket;
 	private PrintWriter out;
 	private BufferedReader in;
+	private Window window;
 	
 	public void run() {
 		try {
 			startConnection("127.0.0.1",5000);
+			setWindow(new Window(this));
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -30,6 +34,10 @@ public class Client implements Runnable{
 		out.println(msg);
 		String resp=in.readLine();
 		return resp;
+	}
+	
+	public void setWindow(Window w) {
+		window = w;
 	}
 	
 	public void stopConnection() throws IOException {

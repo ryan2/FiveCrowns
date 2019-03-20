@@ -1,4 +1,7 @@
 import java.util.*;
+
+import Network.Server;
+
 import java.io.*;
 
 public class Game {
@@ -13,15 +16,17 @@ public class Game {
 	private List<Player> players; //should be in order by position
 	private int playerCount;
 	private Deck deck;
-	private int round; //3-13
+	public int round; //3-13
 	private List<Integer> score;
 	private boolean out;
 	private boolean out2;
+	private Server gameServer;
 	
-	public Game() throws IOException {
+	public Game(Server server) throws IOException {
 		players = new ArrayList<Player>();
 		deck = new Deck();
 		round = 3;
+		gameServer = server;
 		setGame();
 }
 	
@@ -139,6 +144,9 @@ public class Game {
 	
 	private void playOut(Player p) throws IOException {
 		int i = players.indexOf(p)+1;
+		if (i==players.size()) {
+			i = 0;
+		}
 		Referee referee = new Referee(round);
 		for (int j = 1;j<players.size();j++) {
 			Player player = players.get(i);
@@ -146,6 +154,10 @@ public class Game {
 			if (!out2) {
 				doDiscard(player);
 				System.out.println("Time to score your hand!");
+				i = i-1;
+				if (i<0) {
+					i = players.size()-1;
+				}
 				int temp = score.get(i-1);
 				int temp2 = referee.score(player.getHand());
 				temp += temp2;
@@ -191,21 +203,9 @@ public class Game {
 	private void setPlayers() throws IOException {
 		boolean ready = false;
 		System.out.println("How Many Players? 1 to 7");
-		while (!ready) {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-		String response = reader.readLine();
-		try {
-			playerCount = Integer.parseInt(response);
-			if (playerCount<1||playerCount>7) {
-				System.out.println("Invalid Response. Please enter a number from 1 to 7");
-			}
-			else {
-			ready = true;
-			}
-		}catch (NumberFormatException e) {
-			System.out.println("Invalid Response. Please enter a number from 1 to 7");
-			}
-		}
+
+		playerCount = gameServer.getPlayers();
+		System.out.println("PlayerCount");
 		System.out.println("Enter a name for each player one by one. Blank names will be assigned default");
 		for (int i=0; i < playerCount; i++) {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));

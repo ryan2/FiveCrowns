@@ -1,4 +1,3 @@
-
 public class Cards {
 
 	//Suits 0 = none, 1 = Club, 2 = Diamond, 3 = Heart, 4= Spade; 5 = Stars
@@ -16,6 +15,33 @@ public class Cards {
 	}
 	public int getValue() {
 			return value;
+	}
+	
+	public String getDisplay() {
+		String name="";
+		if (joker()) {
+			name = "Joker";
+			return name;
+		}
+		name = Integer.toString(value);
+		switch (suit) {
+		case 1:
+			name = name +"\u2663";
+			break;
+		case 2:
+			name = name +"\u2666";
+			break;
+		case 3:
+			name = name +"\u2665";
+			break;
+		case 4:
+			name = name +"\u2660";
+			break;
+		case 5:
+			name = name +"\u2605";
+			break;
+		}
+		return name;
 	}
 	
 	private boolean faceCard() {
