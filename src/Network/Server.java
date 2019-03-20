@@ -3,6 +3,8 @@ import java.io.*;
 import java.net.*;
 import java.util.List;
 
+import Game.Game;
+
 
 
 public class Server implements Runnable {
@@ -10,7 +12,8 @@ public class Server implements Runnable {
 	private ServerSocket server;
 	private static int players = 0;
 	private static int i=0;
-	private static boolean ready;
+	private static volatile boolean ready;
+	private static Game game;
 	
 	public void run() {
 		try {
@@ -21,8 +24,12 @@ public class Server implements Runnable {
 		}
 	}
 	
+	public void setGame(Game g) {
+		game = g;
+	}
 	
 	public int getPlayers() {
+		System.out.println("Getting players");
 		while (!ready||players==0) {
 		}
 		return players;
@@ -43,7 +50,6 @@ public class Server implements Runnable {
 				}
 			}
 			if (players>0&&i==0) {
-				System.out.println("Setting to True");
 				ready = true;
 			}
 		}
@@ -57,6 +63,7 @@ public class Server implements Runnable {
 		private Socket clientSocket;
 		private PrintWriter out;
 		private BufferedReader in;
+		private int player;
 		
 		public ClientHandler(Socket socket) {
 			this.clientSocket=socket;
@@ -71,14 +78,17 @@ public class Server implements Runnable {
 				while ((inputLine = in.readLine())!=null) {
 					if (inputLine.contentEquals("Ready")){
 						i--;
-						int k = 0;
 						while (!ready) {
-							System.out.println("");
 							}
+						out.println(Integer.toString(players));
+					}
+					else if (inputLine.startsWith("Name:")) {
+						String name = inputLine.substring(5);
+						out.println(Integer.toString(game.addPlayer(name)));
 					}
 					else {
+						System.out.println("Incorrect");
 					}
-					
 				}
 				in.close();
 				out.close();

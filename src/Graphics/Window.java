@@ -19,6 +19,8 @@ public class Window {
 	
 	Client client;
 	
+	JFrame window;
+	
 	JPanel header = new JPanel();
 	JPanel panel = new JPanel();
 	JPanel canvas = new JPanel(new BorderLayout());
@@ -26,10 +28,7 @@ public class Window {
 	JLabel headerLabel = new JLabel();
 	JLabel label = new JLabel();
 	JLabel msg = new JLabel();
-	
-	
-	JFrame window;
-	int turn;
+
 	JButton yesbutton;
 	JButton nobutton;
 	JButton resetbutton;
@@ -42,15 +41,17 @@ public class Window {
 	JButton submitbutton;
 	JButton readybutton;
 	
+	JTextField name = new JTextField(16);
+	int turn;
+	
 	
 	public Window(Client c) {
 		client = c;
-		System.out.println(client.toString());
 		window = new JFrame();
 		window.setSize(640,480);
 		window.setTitle("Five Crowns");
-		window.setVisible(true);
 		setStartWindow();
+		window.setVisible(true);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
@@ -74,6 +75,14 @@ public class Window {
 		
 	}
 
+	private void setName() {
+		panel.removeAll();
+		panel.add(name); 
+		submitbutton = new JButton();
+		submitbutton.setText("Submit");
+		submitbutton.addActionListener(new namebutton());
+		panel.add(submitbutton);
+		}
 	
 	private void setHeaderTurn(){
 		headerLabel.setText("Your Turn");
@@ -101,10 +110,10 @@ public class Window {
 	}
 	
 	private void setPanelStart() {
-		JButton response = new JButton();
-		response.setText("Ready");
-		response.addActionListener(new readybutton());
-		panel.add(response);
+		readybutton = new JButton();
+		readybutton.setText("Ready");
+		readybutton.addActionListener(new readybutton());
+		panel.add(readybutton);
 	}
 	
 	private void setPanelCards(int cards) {
@@ -241,11 +250,22 @@ public class Window {
 		  }
 	}  
 	
+	class namebutton implements ActionListener { 
+		  public void actionPerformed(ActionEvent e) {
+				try {
+					client.sendMessage("Name:"+name.getText());
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+		  }
+	}  
+	
 	class readybutton implements ActionListener { 
 		  public void actionPerformed(ActionEvent e) {
 				try {
-					msg.setText(client.sendMessage("Ready"));
-					
+					msg.setText(client.sendMessage("Ready")+" Player(s). Please enter your Player Name (20 characters max)");
+					setName();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();

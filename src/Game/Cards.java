@@ -1,3 +1,4 @@
+package Game;
 public class Cards {
 
 	//Suits 0 = none, 1 = Club, 2 = Diamond, 3 = Heart, 4= Spade; 5 = Stars

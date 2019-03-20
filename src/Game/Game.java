@@ -1,3 +1,4 @@
+package Game;
 import java.util.*;
 
 import Network.Server;
@@ -14,7 +15,7 @@ public class Game {
 	
 	
 	private List<Player> players; //should be in order by position
-	private int playerCount;
+	private volatile int playerCount;
 	private Deck deck;
 	public int round; //3-13
 	private List<Integer> score;
@@ -27,12 +28,12 @@ public class Game {
 		deck = new Deck();
 		round = 3;
 		gameServer = server;
+		gameServer.setGame(this);
 		setGame();
 }
 	
 	public void play() throws IOException{
 		
-		System.out.println("We got to play!");
 		score = new ArrayList<Integer>(players.size());
 		for (int j=0;j<players.size();j++) {
 			score.add(0);
@@ -200,24 +201,26 @@ public class Game {
 		deck.discard(deck.deal());
 	}
 	
+	public int addPlayer(String name){
+		if (name.isEmpty()) {
+			Player player = new Player(playerCount);
+			players.add(player);
+		}
+		else {
+			Player player = new Player(playerCount, name);
+			players.add(player);
+		}
+		return playerCount;
+	}
+	
 	private void setPlayers() throws IOException {
-		boolean ready = false;
-		System.out.println("How Many Players? 1 to 7");
+		//System.out.println("How Many Players? 1 to 7");
 
 		playerCount = gameServer.getPlayers();
-		System.out.println("PlayerCount");
 		System.out.println("Enter a name for each player one by one. Blank names will be assigned default");
-		for (int i=0; i < playerCount; i++) {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-			String response = reader.readLine();
-			if (response.isEmpty()) {
-				Player player = new Player(i+1);
-				players.add(player);
-			}
-			else {
-				Player player = new Player(i+1, response);
-				players.add(player);
-			}
+		
+		while (playerCount!=players.size()) {
+			
 		}
 	}
 	

@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import Game.Game;
 import Network.*;
 import Graphics.Window;
 
@@ -39,7 +40,6 @@ public class PiChallenge {
 		(new Thread(server)).start();
 		Client client = new Client();
 		(new Thread(client)).start();
-		System.out.println("here");
 		try {
 			Game game = new Game(server);
 			game.play();	
