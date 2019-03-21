@@ -59,13 +59,25 @@ public class Client implements Runnable{
 			
 			boolean deal = false;
 			
+			
 			try {
 				String inputLine;
-				System.out.println("ServerHandler!");
 				while ((inputLine = in.readLine())!=null) {
 					if (inputLine.startsWith("Deal:")) {
-						System.out.println("Deal is true");
 						deal = true;
+					}
+					else if (inputLine.endsWith("EndDeal")) {
+						deal = false;
+					}
+					else if (inputLine.startsWith("Discard:")) {
+						String temp = in.readLine();
+						//Call window show discard
+					}
+					else if (inputLine.startsWith("Turn?")) {
+						String temp = in.readLine();
+						boolean turn = temp.contentEquals("true") ? true : false;
+						if (turn) {window.setHeaderTurn();}
+						else {window.setHeaderNotTurn();}
 					}
 					else if (deal == true) {
 						System.out.println(inputLine);

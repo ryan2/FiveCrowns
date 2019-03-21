@@ -40,6 +40,8 @@ public class PiChallenge {
 		(new Thread(server)).start();
 		Client client = new Client();
 		(new Thread(client)).start();
+		//Client client2 = new Client();
+		//(new Thread(client2)).start();
 		try {
 			Game game = new Game(server);
 			game.play();	

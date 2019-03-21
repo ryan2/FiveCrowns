@@ -99,6 +99,7 @@ public class Game {
 	}
 	
 	private void doTurn(Player player) throws IOException{
+		gameServer.doTurn(player);
 		System.out.println(player.getName()+"'s turn. Your Hand:");
 		int i =1;
 		for (Cards card : player.getHand()) {
@@ -201,10 +202,10 @@ public class Game {
 				player.draw(deck.deal());
 			}
 		}
+		Cards discard = deck.discard(deck.deal());
 		for (Player player : players) {
-			gameServer.setDeal(player.getHand(),player.getPosition());
+			gameServer.setDeal(player.getHand(),discard,player.getPosition());
 		}
-		deck.discard(deck.deal());
 	}
 	
 	public int addPlayer(String name){

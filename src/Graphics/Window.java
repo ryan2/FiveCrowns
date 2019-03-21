@@ -68,6 +68,7 @@ public class Window {
 		window.add(header, BorderLayout.NORTH);
 		window.add(panel,BorderLayout.SOUTH);
 		window.add(canvas,BorderLayout.CENTER);
+		canvas.add(Card, BorderLayout.CENTER);
 		
 	}
 	
@@ -81,9 +82,9 @@ public class Window {
 	public void deal(String card) {
 		String text = Card.getText();
 		Card.setText(text+card);
-		canvas.add(Card, BorderLayout.CENTER);
+		//canvas.add(Card, BorderLayout.CENTER);
 		Card.setHorizontalAlignment(JLabel.CENTER);
-		canvas.repaint();
+		//canvas.repaint();
 	}
 
 	private void setName() {
@@ -95,7 +96,7 @@ public class Window {
 		panel.add(submitbutton);
 		}
 	
-	private void setHeaderTurn(){
+	public void setHeaderTurn(){
 		headerLabel.setText("Your Turn");
 		header.setBackground(Color.MAGENTA);
 		
@@ -103,7 +104,7 @@ public class Window {
 	
 	private void setHeaderStart() {
 		headerLabel.setText("Welcome to Five Crowns");
-		header.setBackground(Color.MAGENTA);
+		header.setBackground(Color.ORANGE);
 		header.add(headerLabel);
 	}
 
@@ -126,7 +127,7 @@ public class Window {
 		panel.add(readybutton);
 	}
 	
-	private void setHeaderNotTurn(){
+	public void setHeaderNotTurn(){
 		headerLabel.setText("Not Your Turn");
 		header.setBackground(Color.RED);
 		

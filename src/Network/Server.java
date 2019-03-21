@@ -43,10 +43,10 @@ public class Server implements Runnable {
 	public void doTurn(Player player) {
 		ClientHandler client = clients.get(player.getPosition());
 		try {
-			PrintWriter out = new PrintWriter(client.clientSocket.getOutputStream(),true);
-			List<Cards> hand = player.getHand();
-			for (int i =0;i<hand.size();i++) {
-				out.println(hand.get(i).getDisplay());
+			for (ClientHandler c : clients) {
+				PrintWriter out = new PrintWriter(client.clientSocket.getOutputStream(),true);
+				out.println("Turn?");
+				out.println(client.equals(c) ? "true" : "false");
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -54,7 +54,7 @@ public class Server implements Runnable {
 		}
 	}
 	
-	public void setDeal(List<Cards> hand, int position) {
+	public void setDeal(List<Cards> hand, Cards discard, int position) {
 		ClientHandler client = clients.get(position);
 		PrintWriter out;
 		try {
@@ -63,6 +63,10 @@ public class Server implements Runnable {
 			for (int i =0;i<hand.size();i++) {
 				out.println(hand.get(i).getDisplay());
 			}
+			out.println("EndDeal");
+			out.println("Discard:");
+			out.println(discard.getDisplay());
+			out.println("EndDiscard");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
