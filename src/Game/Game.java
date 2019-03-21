@@ -25,10 +25,12 @@ public class Game {
 	
 	public Game(Server server) throws IOException {
 		players = new ArrayList<Player>();
+		playerCount = 0;
 		deck = new Deck();
 		round = 3;
 		gameServer = server;
 		gameServer.setGame(this);
+		while (!server.isReady());
 		setGame();
 }
 	
@@ -189,6 +191,7 @@ public class Game {
 	
 	private void setGame() throws IOException {
 		setPlayers();
+		System.out.println(round);
 		deal(round);
 	}
 	
@@ -198,6 +201,9 @@ public class Game {
 				player.draw(deck.deal());
 			}
 		}
+		for (Player player : players) {
+			gameServer.setDeal(player.getHand(),player.getPosition());
+		}
 		deck.discard(deck.deal());
 	}
 	
@@ -205,23 +211,21 @@ public class Game {
 		if (name.isEmpty()) {
 			Player player = new Player(playerCount);
 			players.add(player);
+			playerCount++;
 		}
 		else {
 			Player player = new Player(playerCount, name);
 			players.add(player);
+			playerCount++;
 		}
 		return playerCount;
 	}
 	
 	private void setPlayers() throws IOException {
 		//System.out.println("How Many Players? 1 to 7");
-
-		playerCount = gameServer.getPlayers();
-		System.out.println("Enter a name for each player one by one. Blank names will be assigned default");
+		int temp = gameServer.getPlayers();
+		while (playerCount != temp);
 		
-		while (playerCount!=players.size()) {
-			
-		}
 	}
 	
 	

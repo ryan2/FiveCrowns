@@ -8,8 +8,8 @@ public class Client implements Runnable{
 
 	private Socket clientSocket;
 	private PrintWriter out;
-	private BufferedReader in;
-	private Window window;
+	private static BufferedReader in;
+	private static Window window;
 	
 	public void run() {
 		try {
@@ -30,6 +30,10 @@ public class Client implements Runnable{
 		in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 	}
 	
+	public void getDeal() {
+		new ServerHandler().start();
+	}
+	
 	public String sendMessage(String msg) throws IOException {
 		out.println(msg);
 		String resp=in.readLine();
@@ -45,4 +49,33 @@ public class Client implements Runnable{
 		out.close();
 		clientSocket.close();
 	}
+	
+	private static class ServerHandler extends Thread{
+		
+		public ServerHandler() {
+		}
+		
+		public void run() {
+			
+			boolean deal = false;
+			
+			try {
+				String inputLine;
+				System.out.println("ServerHandler!");
+				while ((inputLine = in.readLine())!=null) {
+					if (inputLine.startsWith("Deal:")) {
+						System.out.println("Deal is true");
+						deal = true;
+					}
+					else if (deal == true) {
+						System.out.println(inputLine);
+						window.deal(inputLine);
+					}
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				}
+			}
+		}
 }

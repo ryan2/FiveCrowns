@@ -28,6 +28,8 @@ public class Window {
 	JLabel headerLabel = new JLabel();
 	JLabel label = new JLabel();
 	JLabel msg = new JLabel();
+	JLabel footerLabel = new JLabel();
+	JLabel Card = new JLabel();
 
 	JButton yesbutton;
 	JButton nobutton;
@@ -42,7 +44,8 @@ public class Window {
 	JButton readybutton;
 	
 	JTextField name = new JTextField(16);
-	int turn;
+	boolean turn;
+	int player;
 	
 	
 	public Window(Client c) {
@@ -74,6 +77,14 @@ public class Window {
 		header.add(headerLabel);
 		
 	}
+	
+	public void deal(String card) {
+		String text = Card.getText();
+		Card.setText(text+card);
+		canvas.add(Card, BorderLayout.CENTER);
+		Card.setHorizontalAlignment(JLabel.CENTER);
+		canvas.repaint();
+	}
 
 	private void setName() {
 		panel.removeAll();
@@ -87,7 +98,6 @@ public class Window {
 	private void setHeaderTurn(){
 		headerLabel.setText("Your Turn");
 		header.setBackground(Color.MAGENTA);
-		header.add(headerLabel);
 		
 	}
 	
@@ -102,11 +112,11 @@ public class Window {
 		label.setText("The Arena");
 		label.setHorizontalAlignment(JLabel.CENTER);
 		canvas.setSize(640,400);
-		canvas.add(label,BorderLayout.NORTH);
+		canvas.add(label,BorderLayout.PAGE_START);
 		canvas.setBackground(Color.GREEN.darker());
 		msg.setText("Waiting for number of players");
 		msg.setHorizontalAlignment(JLabel.CENTER);
-		canvas.add(msg,BorderLayout.SOUTH);
+		canvas.add(msg,BorderLayout.PAGE_END);
 	}
 	
 	private void setPanelStart() {
@@ -114,6 +124,12 @@ public class Window {
 		readybutton.setText("Ready");
 		readybutton.addActionListener(new readybutton());
 		panel.add(readybutton);
+	}
+	
+	private void setHeaderNotTurn(){
+		headerLabel.setText("Not Your Turn");
+		header.setBackground(Color.RED);
+		
 	}
 	
 	private void setPanelCards(int cards) {
@@ -253,7 +269,11 @@ public class Window {
 	class namebutton implements ActionListener { 
 		  public void actionPerformed(ActionEvent e) {
 				try {
-					client.sendMessage("Name:"+name.getText());
+					player = Integer.parseInt(client.sendMessage("Name:"+name.getText()));
+					msg.setText(name.getText());
+					panel.removeAll();
+					panel.repaint();
+					client.getDeal();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();

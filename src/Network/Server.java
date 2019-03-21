@@ -1,9 +1,13 @@
 package Network;
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.*;
 
+import Game.Cards;
 import Game.Game;
+import Game.Player;
 
 
 
@@ -11,9 +15,11 @@ public class Server implements Runnable {
 
 	private ServerSocket server;
 	private static int players = 0;
-	private static int i=0;
+	private static int i=0; //users we are waiting on
 	private static volatile boolean ready;
 	private static Game game;
+	private static List<ClientHandler> clients = new ArrayList<ClientHandler>();
+	private static ReentrantLock lock = new ReentrantLock();
 	
 	public void run() {
 		try {
@@ -29,11 +35,44 @@ public class Server implements Runnable {
 	}
 	
 	public int getPlayers() {
-		System.out.println("Getting players");
 		while (!ready||players==0) {
 		}
 		return players;
 	}
+	
+	public void doTurn(Player player) {
+		ClientHandler client = clients.get(player.getPosition());
+		try {
+			PrintWriter out = new PrintWriter(client.clientSocket.getOutputStream(),true);
+			List<Cards> hand = player.getHand();
+			for (int i =0;i<hand.size();i++) {
+				out.println(hand.get(i).getDisplay());
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void setDeal(List<Cards> hand, int position) {
+		ClientHandler client = clients.get(position);
+		PrintWriter out;
+		try {
+			out = new PrintWriter(client.clientSocket.getOutputStream(),true);
+			out.println("Deal:");
+			for (int i =0;i<hand.size();i++) {
+				out.println(hand.get(i).getDisplay());
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean isReady() {
+		return ready;
+	}
+	
 	public void start(int port) throws IOException {
 		server = new ServerSocket(port);
 		ready=false;
@@ -46,7 +85,6 @@ public class Server implements Runnable {
 					i++;
 				}
 				catch (java.net.SocketTimeoutException e) {
-					e.printStackTrace();
 				}
 			}
 			if (players>0&&i==0) {
@@ -59,11 +97,11 @@ public class Server implements Runnable {
 		server.close();
 	}
 	
+	
 	private static class ClientHandler extends Thread{
 		private Socket clientSocket;
 		private PrintWriter out;
 		private BufferedReader in;
-		private int player;
 		
 		public ClientHandler(Socket socket) {
 			this.clientSocket=socket;
@@ -83,8 +121,11 @@ public class Server implements Runnable {
 						out.println(Integer.toString(players));
 					}
 					else if (inputLine.startsWith("Name:")) {
+						lock.lock();
 						String name = inputLine.substring(5);
 						out.println(Integer.toString(game.addPlayer(name)));
+						clients.add(this);
+						lock.unlock();
 					}
 					else {
 						System.out.println("Incorrect");
