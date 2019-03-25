@@ -30,14 +30,19 @@ public class Client implements Runnable{
 		in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 	}
 	
-	public void getDeal() {
-		new ServerHandler().start();
+	public static void getDeal() {
+		new ServerHandler().start();		
 	}
+	
 	
 	public String sendMessage(String msg) throws IOException {
 		out.println(msg);
 		String resp=in.readLine();
 		return resp;
+	}
+	
+	public void sendMessageVoid(String msg) {
+		out.println(msg);
 	}
 	
 	public void setWindow(Window w) {
@@ -56,13 +61,11 @@ public class Client implements Runnable{
 		}
 		
 		public void run() {
-			
 			boolean deal = false;
-			
-			
 			try {
 				String inputLine;
 				while ((inputLine = in.readLine())!=null) {
+					System.out.println("THIS IS THE INPUTLINE: "+inputLine);
 					if (inputLine.startsWith("Deal:")) {
 						deal = true;
 					}
@@ -71,16 +74,30 @@ public class Client implements Runnable{
 					}
 					else if (inputLine.startsWith("Discard:")) {
 						String temp = in.readLine();
-						//Call window show discard
+						window.showDiscard(temp);
+					}
+					else if (inputLine.startsWith("Draw:")) {
+						window.draw(inputLine.substring(5));
+					}
+					else if (inputLine.startsWith("Discard")){
+						
+					}
+					else if (inputLine.startsWith("Out")) {
+						
 					}
 					else if (inputLine.startsWith("Turn?")) {
+						System.out.println("INTURN");
 						String temp = in.readLine();
 						boolean turn = temp.contentEquals("true") ? true : false;
-						if (turn) {window.setHeaderTurn();}
-						else {window.setHeaderNotTurn();}
+						if (turn) {
+							window.setHeaderTurn();
+							window.doTurn();
+						}
+						else {
+							window.setHeaderNotTurn();
+						}
 					}
 					else if (deal == true) {
-						System.out.println(inputLine);
 						window.deal(inputLine);
 					}
 				}

@@ -30,6 +30,7 @@ public class Window {
 	JLabel msg = new JLabel();
 	JLabel footerLabel = new JLabel();
 	JLabel Card = new JLabel();
+	JLabel discard = new JLabel();
 
 	JButton yesbutton;
 	JButton nobutton;
@@ -46,6 +47,7 @@ public class Window {
 	JTextField name = new JTextField(16);
 	boolean turn;
 	int player;
+	int round;
 	
 	
 	public Window(Client c) {
@@ -55,6 +57,7 @@ public class Window {
 		window.setTitle("Five Crowns");
 		setStartWindow();
 		window.setVisible(true);
+		round = 3;
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
@@ -69,6 +72,7 @@ public class Window {
 		window.add(panel,BorderLayout.SOUTH);
 		window.add(canvas,BorderLayout.CENTER);
 		canvas.add(Card, BorderLayout.CENTER);
+		canvas.add(discard,BorderLayout.LINE_START);
 		
 	}
 	
@@ -86,6 +90,10 @@ public class Window {
 		Card.setHorizontalAlignment(JLabel.CENTER);
 		//canvas.repaint();
 	}
+	
+	public void showDiscard(String card) {
+		discard.setText("Discard Pile: "+card);
+	}
 
 	private void setName() {
 		panel.removeAll();
@@ -102,12 +110,79 @@ public class Window {
 		
 	}
 	
+	public void draw(String s) {
+		String temp = Card.getText();
+		Card.setText(temp+s);
+		doDiscard();
+	}
+	
+	public void doTurn() {
+		panel.removeAll();
+		drawbutton = new JButton();
+		discardbutton = new JButton();
+		outbutton = new JButton();
+		
+		drawbutton.setText("Draw Deck");
+		discardbutton.setText("Draw Discard");
+		outbutton.setText("Go Out");
+		
+		drawbutton.addActionListener(new drawbutton());
+		discardbutton.addActionListener(new discardbutton());
+		outbutton.addActionListener(new outbutton());
+		
+		panel.add(drawbutton);
+		panel.add(discardbutton);
+		panel.add(outbutton);
+		window.setVisible(true);
+		
+	}
+	
+	private void doDiscard() {
+		msg.setText("Pick the number of the card you wish to discard.");
+		panel.removeAll();
+		window.setVisible(true);
+		for (int i = 1;i<=round+1;i++) {
+			int num =i-1;
+			JButton card = new JButton(Integer.toString(i));
+			card.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					System.out.println("Selected Card" + num);
+					client.sendMessageVoid(String.valueOf(num));
+					setHeaderWait();
+					String cards = Card.getText();
+					int start = 0,end = 0;
+					int counter = num;
+					for (int i = 0;i<cards.length();i++) {
+						if (counter == 0) {
+							start = i;
+							if (cards.substring(i+1,i+2).matches("\\D")) {
+								end = i+2;
+							}
+							else {
+								end = i+3;
+							}
+							break;
+						}
+						if (cards.substring(i,i+1).matches("\\D")) {
+							counter-=1;
+						}
+					}
+					discard.setText("Discard Pile: "+cards.substring(start, end));
+					Card.setText(cards.substring(0,start)+cards.substring(end));
+					window.setVisible(true);
+				}
+			});
+			panel.add(card);
+			
+		}
+		window.setVisible(true);
+	}
+	
 	private void setHeaderStart() {
 		headerLabel.setText("Welcome to Five Crowns");
 		header.setBackground(Color.ORANGE);
 		header.add(headerLabel);
 	}
-
 	
 	private void setCanvas() {
 		label.setText("The Arena");
@@ -132,38 +207,11 @@ public class Window {
 		header.setBackground(Color.RED);
 		
 	}
-	
-	private void setPanelCards(int cards) {
-		JButton response;
-		for (int i = 1;i<=cards;i++) {
-			response = new JButton(Integer.toString(i));
-			int num = i;
-			response.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					System.out.println("Selected Card" + num);
-					setHeaderWait();
-					try {
-						client.sendMessage(Integer.toString(num));
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			});
-			panel.add(response);
-		}
-		window.add(panel);
-		panel.setBackground(Color.LIGHT_GRAY);
-	}
+
 	
 	class drawbutton implements ActionListener { 
 		  public void actionPerformed(ActionEvent e) {
-				try {
-					client.sendMessage("Draw");
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				client.sendMessageVoid("Draw");
 		  }
 	}
 	
@@ -214,12 +262,8 @@ public class Window {
 	
 	class discardbutton implements ActionListener { 
 		  public void actionPerformed(ActionEvent e) {
-				try {
-					client.sendMessage("Discard");
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				client.sendMessageVoid("Discard");
+				discard.setText("Discard Pile:");
 		  }
 	}  
 	

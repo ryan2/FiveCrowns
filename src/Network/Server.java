@@ -40,13 +40,18 @@ public class Server implements Runnable {
 		return players;
 	}
 	
-	public void doTurn(Player player) {
+	public void setTurn(Player player) {
+		System.out.println("PLAYER POSITION: "+player.getPosition());
 		ClientHandler client = clients.get(player.getPosition());
 		try {
 			for (ClientHandler c : clients) {
+				System.out.println("SOCKET INFORMATION: "+clients.size()+c.getId());
 				PrintWriter out = new PrintWriter(client.clientSocket.getOutputStream(),true);
+				System.out.println("Turn? "+client.equals(c));
 				out.println("Turn?");
-				out.println(client.equals(c) ? "true" : "false");
+				String bool = String.valueOf(client.equals(c));
+				System.out.print("BOOL: "+bool);
+				out.println(bool);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -73,6 +78,20 @@ public class Server implements Runnable {
 		}
 	}
 	
+	public void setDiscard(Cards discard) {
+		for (ClientHandler client: clients) {
+			PrintWriter out;
+			try {
+				out = new PrintWriter(client.clientSocket.getOutputStream(),true);
+				out.println("Discard:");
+				out.println(discard.getDisplay());
+				out.println("EndDiscard");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public boolean isReady() {
 		return ready;
 	}
@@ -80,7 +99,7 @@ public class Server implements Runnable {
 	public void start(int port) throws IOException {
 		server = new ServerSocket(port);
 		ready=false;
-		server.setSoTimeout(5000);
+		server.setSoTimeout(3000);
 		while (!ready||players==0) {
 			if (players<7) {
 				try {
@@ -101,6 +120,23 @@ public class Server implements Runnable {
 		server.close();
 	}
 	
+	public String getInputStream(Player player) {
+		BufferedReader in;
+		String inputLine = null;
+		try {
+			in = new BufferedReader(new InputStreamReader(clients.get(player.getPosition()).clientSocket.getInputStream()));
+			inputLine = in.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if (inputLine!=null ) {
+			return inputLine;
+		}
+		System.out.println("InputStreamFailed");
+		return "";
+	}
 	
 	private static class ClientHandler extends Thread{
 		private Socket clientSocket;
@@ -117,12 +153,24 @@ public class Server implements Runnable {
 				in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 				
 				String inputLine;
+				Boolean discard = false;
 				while ((inputLine = in.readLine())!=null) {
+					if (discard) {
+						if (!inputLine.isEmpty()) {
+							game.doDiscard(inputLine);
+							discard = false;
+						}
+					}
 					if (inputLine.contentEquals("Ready")){
 						i--;
 						while (!ready) {
 							}
 						out.println(Integer.toString(players));
+					}
+					else if (inputLine.contentEquals("Draw")||inputLine.contentEquals("Discard")) {
+						Cards c = game.doTurn(inputLine);
+						out.println("Draw:"+c.getDisplay());
+						discard = true;
 					}
 					else if (inputLine.startsWith("Name:")) {
 						lock.lock();

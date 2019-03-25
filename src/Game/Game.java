@@ -23,6 +23,8 @@ public class Game {
 	private boolean out2;
 	private Server gameServer;
 	
+	private Player turn;
+	
 	public Game(Server server) throws IOException {
 		players = new ArrayList<Player>();
 		playerCount = 0;
@@ -61,11 +63,10 @@ public class Game {
 		while (!out) {
 			for (Player player : players) {
 				if (!out) {
-					doTurn(player);
+					System.out.println("going once");
+					turn = player;
+					setTurn(player);
 				}
-				if (!out) {
-					doDiscard(player);
-					}
 				else {
 					break;
 				}
@@ -73,77 +74,72 @@ public class Game {
 				}
 }
 	
-	private void doDiscard(Player player) throws IOException{
-		int discard;
-		System.out.println("Enter the number of the card to discard.");
-		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-		String response = reader.readLine();
-		while (true) {
-			try {
-				discard = Integer.parseInt(response);
-				if (discard<1||discard>player.getHand().size()) {
-					System.out.println("Invalid Response. Please enter a number from 1 to "+player.getHand().size());
-					reader = new BufferedReader(new InputStreamReader(System.in));
-					response = reader.readLine();
-				}
-				else {
-					break;
-				}
-			}catch (NumberFormatException e) {
-				System.out.println("Invalid Response. Please enter a number from 1 to "+player.getHand().size());
-				reader = new BufferedReader(new InputStreamReader(System.in));
-				response = reader.readLine();
-				}
+	public void doDiscard(String i) throws IOException{
+		int discard = Integer.valueOf(i);
+		Player player = turn;
+		deck.discard(player.discard(discard));
+		synchronized(player) {
+			player.notify();
 		}
-		deck.discard(player.discard(discard-1));
 	}
 	
-	private void doTurn(Player player) throws IOException{
-		gameServer.doTurn(player);
+	public Cards doTurn(String response) throws IOException{
+		Player player = turn;
+		//BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+		//System.out.println("Response is: "+response);
+		switch (response) {
+		case "Draw":
+			Cards c = player.draw(deck.deal());
+			System.out.println("Card "+player.getHand().size()+": "+c.getName());
+			return c;
+		case "Discard":
+			c = player.draw(deck.drawDiscard());
+			System.out.println("Card "+player.getHand().size()+": "+c.getName());
+			return c;
+			}
+		return null;
+		}
+	
+	private void doOut() throws IOException {
+		Player player = turn;
+		Referee referee = new Referee(round);
+		if (referee.out(player.getHand())) {
+			if (!out) {
+				out = true;
+				System.out.println("You are out. No points added");
+				System.out.println("Last hand for the remaining players");
+				playOut(player);
+			}
+			else {
+				System.out.println("You are out. No points added");
+				out2 = true;
+			}
+		}
+		else {
+			System.out.println("Referee says no. Try Again");
+		}
+	}
+	
+	private void setTurn(Player player) throws IOException{
+		gameServer.setTurn(player);
 		System.out.println(player.getName()+"'s turn. Your Hand:");
 		int i =1;
 		for (Cards card : player.getHand()) {
 			System.out.println("Card "+Integer.toString(i)+": "+card.getName());
 			i++;
 		}
-		boolean play = false;
-		while (!play) {
-			System.out.println("Discard Pile: "+deck.showDiscard().getName());
-			System.out.println("Answer 'Deck' or 'Discard' to draw from the Deck or Discard Pile. Answer 'Out' to go out");
-			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-			String response = reader.readLine();
-			switch (response) {
-			case "Deck":
-				Cards c = player.draw(deck.deal());
-				System.out.println("Card "+player.getHand().size()+": "+c.getName());
-				play = true;
-				break;
-			case "Discard":
-				c = player.draw(deck.drawDiscard());
-				System.out.println("Card "+player.getHand().size()+": "+c.getName());
-				play = true;
-				break;
-			case "Out":
-				Referee referee = new Referee(round);
-				if (referee.out(player.getHand())) {
-					play = true;
-					if (!out) {
-						out = true;
-						System.out.println("You are out. No points added");
-						System.out.println("Last hand for the remaining players");
-						playOut(player);
-					}
-					else {
-						System.out.println("You are out. No points added");
-						out2 = true;
-					}
-					break;
-				}
-				else {
-					System.out.println("Referee says no. Try Again");
-				}
+		System.out.println("Discard Pile: "+deck.showDiscard().getName());
+		System.out.println("Answer 'Deck' or 'Discard' to draw from the Deck or Discard Pile. Answer 'Out' to go out");
+		try {
+			synchronized(player) {
+				player.wait();
 			}
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		System.out.println("Done waiting");
+		
 	}
 	
 	private void playOut(Player p) throws IOException {
@@ -154,9 +150,9 @@ public class Game {
 		Referee referee = new Referee(round);
 		for (int j = 1;j<players.size();j++) {
 			Player player = players.get(i);
-			doTurn(player);
+			setTurn(player);
 			if (!out2) {
-				doDiscard(player);
+				doDiscard("change");
 				System.out.println("Time to score your hand!");
 				i = i-1;
 				if (i<0) {
@@ -192,7 +188,7 @@ public class Game {
 	
 	private void setGame() throws IOException {
 		setPlayers();
-		System.out.println(round);
+		System.out.println("Round: "+round);
 		deal(round);
 	}
 	
