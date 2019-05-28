@@ -33,6 +33,7 @@ public class Game {
 		gameServer = server;
 		gameServer.setGame(this);
 		while (!server.isReady());
+		server.startGame();
 		setGame();
 }
 	
@@ -174,11 +175,14 @@ public class Game {
 	
 	private void checkState() {
 		int i =1;
+		System.out.println("******************************CHECKING STATE*************************************");
+		System.out.println("******************************Deck*************************************");
 		for (Cards card : deck.cards()) {
 			System.out.println(Integer.toString(i)+" "+card.getName());
 			i++;}
 		System.out.println("Discard: "+deck.showDiscard().getName());	
 		for (Player player : players) {
+			System.out.println("******************************Player*************************************");
 			System.out.println(player.getName());
 			for (Cards card: player.getHand()) {
 				System.out.println(card.getName());
@@ -187,7 +191,6 @@ public class Game {
 	}
 	
 	private void setGame() throws IOException {
-		setPlayers();
 		System.out.println("Round: "+round);
 		deal(round);
 	}
@@ -200,6 +203,7 @@ public class Game {
 		}
 		Cards discard = deck.discard(deck.deal());
 		for (Player player : players) {
+			System.out.println("Players: "+players.size());
 			gameServer.setDeal(player.getHand(),discard,player.getPosition());
 		}
 	}
@@ -217,14 +221,7 @@ public class Game {
 		}
 		return playerCount;
 	}
-	
-	private void setPlayers() throws IOException {
-		//System.out.println("How Many Players? 1 to 7");
-		int temp = gameServer.getPlayers();
-		while (playerCount != temp);
 		
-	}
-	
 	
 }
 	

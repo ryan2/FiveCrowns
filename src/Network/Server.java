@@ -17,6 +17,7 @@ public class Server implements Runnable {
 	private static int players = 0;
 	private static int i=0; //users we are waiting on
 	private static volatile boolean ready;
+	private static volatile boolean start = false;
 	private static Game game;
 	private static List<ClientHandler> clients = new ArrayList<ClientHandler>();
 	private static ReentrantLock lock = new ReentrantLock();
@@ -40,6 +41,22 @@ public class Server implements Runnable {
 		return players;
 	}
 	
+	public void startGame() {
+		if (clients.size()==players) {
+			start = true;
+		}
+		while (!start);
+		for (ClientHandler c : clients) {
+			try {
+				PrintWriter out = new PrintWriter(c.clientSocket.getOutputStream(),true);
+				System.out.println(c.clientSocket.toString());
+				out.println("Start"+Integer.toString(players));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 	public void setTurn(Player player) {
 		System.out.println("PLAYER POSITION: "+player.getPosition());
 		ClientHandler client = clients.get(player.getPosition());
@@ -145,16 +162,17 @@ public class Server implements Runnable {
 		
 		public ClientHandler(Socket socket) {
 			this.clientSocket=socket;
+			System.out.println(socket.toString());
 		}
 		
 		public void run() {
 			try {
 				out = new PrintWriter(clientSocket.getOutputStream(),true);
 				in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-				
 				String inputLine;
 				Boolean discard = false;
 				while ((inputLine = in.readLine())!=null) {
+					System.out.println(inputLine);
 					if (discard) {
 						if (!inputLine.isEmpty()) {
 							game.doDiscard(inputLine);
@@ -163,9 +181,6 @@ public class Server implements Runnable {
 					}
 					if (inputLine.contentEquals("Ready")){
 						i--;
-						while (!ready) {
-							}
-						out.println(Integer.toString(players));
 					}
 					else if (inputLine.contentEquals("Draw")||inputLine.contentEquals("Discard")) {
 						Cards c = game.doTurn(inputLine);
@@ -173,11 +188,12 @@ public class Server implements Runnable {
 						discard = true;
 					}
 					else if (inputLine.startsWith("Name:")) {
-						lock.lock();
 						String name = inputLine.substring(5);
-						out.println(Integer.toString(game.addPlayer(name)));
+						game.addPlayer(name);
 						clients.add(this);
-						lock.unlock();
+						if (clients.size()==players) {
+							start= true;
+						}
 					}
 					else {
 						System.out.println("Incorrect");
@@ -189,7 +205,7 @@ public class Server implements Runnable {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			} 
 		}
 		
 	}

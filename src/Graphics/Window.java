@@ -76,6 +76,12 @@ public class Window {
 		
 	}
 	
+	public void setPlayer(int i) {
+		player = i;
+		msg.setText(Integer.toString(i)+" Players");
+		panel.repaint();
+	}
+	
 	private void setHeaderWait(){
 		headerLabel.setText("Other Player's Turn");
 		header.setBackground(Color.RED);
@@ -313,28 +319,18 @@ public class Window {
 	
 	class namebutton implements ActionListener { 
 		  public void actionPerformed(ActionEvent e) {
-				try {
-					player = Integer.parseInt(client.sendMessage("Name:"+name.getText()));
-					msg.setText(name.getText());
-					panel.removeAll();
-					panel.repaint();
-					client.getDeal();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				client.sendMessageVoid("Name:"+name.getText());
+				msg.setText("Waiting for Players");
+				panel.removeAll();
+				panel.repaint();
 		  }
 	}  
 	
 	class readybutton implements ActionListener { 
 		  public void actionPerformed(ActionEvent e) {
-				try {
-					msg.setText(client.sendMessage("Ready")+" Player(s). Please enter your Player Name (20 characters max)");
-					setName();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				client.sendMessageVoid("Ready");
+				msg.setText("Please enter your Player Name (20 characters max)");
+				setName();
 		  }
 	}  
 		  

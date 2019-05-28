@@ -8,13 +8,13 @@ public class Client implements Runnable{
 
 	private Socket clientSocket;
 	private PrintWriter out;
-	private static BufferedReader in;
 	private static Window window;
 	
 	public void run() {
 		try {
 			startConnection("127.0.0.1",5000);
 			setWindow(new Window(this));
+			new ServerHandler(clientSocket).start();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -27,15 +27,11 @@ public class Client implements Runnable{
 	public void startConnection(String ip, int port) throws UnknownHostException, IOException {
 		clientSocket = new Socket(ip,port);
 		out = new PrintWriter(clientSocket.getOutputStream(),true);
-		in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-	}
-	
-	public static void getDeal() {
-		new ServerHandler().start();		
 	}
 	
 	
 	public String sendMessage(String msg) throws IOException {
+		BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		out.println(msg);
 		String resp=in.readLine();
 		return resp;
@@ -50,20 +46,25 @@ public class Client implements Runnable{
 	}
 	
 	public void stopConnection() throws IOException {
-		in.close();
 		out.close();
 		clientSocket.close();
 	}
 	
 	private static class ServerHandler extends Thread{
+		private Socket mainSocket;
 		
-		public ServerHandler() {
+		public ServerHandler(Socket socket) {
+			this.mainSocket = socket;
 		}
 		
 		public void run() {
+			System.out.println("Starting Client");
 			boolean deal = false;
 			try {
 				String inputLine;
+				System.out.println("CLient: "+mainSocket.toString());
+				BufferedReader in = new BufferedReader(new InputStreamReader(mainSocket.getInputStream()));
+				System.out.println("Starting Inside Client");
 				while ((inputLine = in.readLine())!=null) {
 					System.out.println("THIS IS THE INPUTLINE: "+inputLine);
 					if (inputLine.startsWith("Deal:")) {
@@ -71,6 +72,9 @@ public class Client implements Runnable{
 					}
 					else if (inputLine.endsWith("EndDeal")) {
 						deal = false;
+					}
+					else if (inputLine.startsWith("Start")) {
+						window.setPlayer(Integer.parseInt(inputLine.substring(5)));
 					}
 					else if (inputLine.startsWith("Discard:")) {
 						String temp = in.readLine();
