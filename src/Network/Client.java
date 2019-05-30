@@ -8,13 +8,13 @@ public class Client implements Runnable{
 
 	private Socket clientSocket;
 	private PrintWriter out;
-	private static Window window;
+	private Window window;
 	
 	public void run() {
 		try {
 			startConnection("127.0.0.1",5000);
 			setWindow(new Window(this));
-			new ServerHandler(clientSocket).start();
+			new ServerHandler(clientSocket, window).start();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -52,21 +52,20 @@ public class Client implements Runnable{
 	
 	private static class ServerHandler extends Thread{
 		private Socket mainSocket;
+		private Window window;
 		
-		public ServerHandler(Socket socket) {
+		public ServerHandler(Socket socket, Window w) {
 			this.mainSocket = socket;
+			window = w;
 		}
 		
 		public void run() {
-			System.out.println("Starting Client");
 			boolean deal = false;
 			try {
 				String inputLine;
-				System.out.println("CLient: "+mainSocket.toString());
 				BufferedReader in = new BufferedReader(new InputStreamReader(mainSocket.getInputStream()));
-				System.out.println("Starting Inside Client");
 				while ((inputLine = in.readLine())!=null) {
-					System.out.println("THIS IS THE INPUTLINE: "+inputLine);
+					System.out.println("THIS IS THE INPUTLINE: "+inputLine+mainSocket.toString());
 					if (inputLine.startsWith("Deal:")) {
 						deal = true;
 					}
@@ -89,16 +88,21 @@ public class Client implements Runnable{
 					else if (inputLine.startsWith("Out")) {
 						
 					}
+					else if (inputLine.startsWith("NOTOUT")) {
+						window.setFinish();
+					}
 					else if (inputLine.startsWith("Turn?")) {
-						System.out.println("INTURN");
 						String temp = in.readLine();
 						boolean turn = temp.contentEquals("true") ? true : false;
 						if (turn) {
+							System.out.println("Turn is True "+ window.name.getText());
 							window.setHeaderTurn();
 							window.doTurn();
 						}
 						else {
-							window.setHeaderNotTurn();
+							System.out.println("Turn is False "+ window.name.getText());
+							temp = in.readLine();
+							window.setHeaderNotTurn(temp);
 						}
 					}
 					else if (deal == true) {

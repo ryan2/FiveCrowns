@@ -64,7 +64,6 @@ public class Game {
 		while (!out) {
 			for (Player player : players) {
 				if (!out) {
-					System.out.println("going once");
 					turn = player;
 					setTurn(player);
 				}
@@ -75,10 +74,15 @@ public class Game {
 				}
 }
 	
-	public void doDiscard(String i) throws IOException{
+	public Cards doDiscard(String i) throws IOException{
 		int discard = Integer.valueOf(i);
 		Player player = turn;
-		deck.discard(player.discard(discard));
+		return deck.discard(player.discard(discard));
+	}
+	
+	public void endTurn() {
+		System.out.println("ENDING TURN");
+		Player player = turn;
 		synchronized(player) {
 			player.notify();
 		}
@@ -101,7 +105,7 @@ public class Game {
 		return null;
 		}
 	
-	private void doOut() throws IOException {
+	public void doOut() throws IOException {
 		Player player = turn;
 		Referee referee = new Referee(round);
 		if (referee.out(player.getHand())) {
@@ -117,6 +121,7 @@ public class Game {
 			}
 		}
 		else {
+			gameServer.sendMsg("NOTOUT", player.getPosition());
 			System.out.println("Referee says no. Try Again");
 		}
 	}
@@ -204,6 +209,7 @@ public class Game {
 		Cards discard = deck.discard(deck.deal());
 		for (Player player : players) {
 			System.out.println("Players: "+players.size());
+			System.out.println(player.getPosition());
 			gameServer.setDeal(player.getHand(),discard,player.getPosition());
 		}
 	}

@@ -43,8 +43,9 @@ public class Window {
 	JButton outbutton;
 	JButton submitbutton;
 	JButton readybutton;
+	JButton finishbutton;
 	
-	JTextField name = new JTextField(16);
+	public JTextField name = new JTextField(16);
 	boolean turn;
 	int player;
 	int round;
@@ -78,8 +79,10 @@ public class Window {
 	
 	public void setPlayer(int i) {
 		player = i;
-		msg.setText(Integer.toString(i)+" Players");
+		msg.setText(Integer.toString(i)+" Players - "+name.getText());
+		panel.removeAll();
 		panel.repaint();
+		
 	}
 	
 	private void setHeaderWait(){
@@ -154,7 +157,6 @@ public class Window {
 				public void actionPerformed(ActionEvent evt) {
 					System.out.println("Selected Card" + num);
 					client.sendMessageVoid(String.valueOf(num));
-					setHeaderWait();
 					String cards = Card.getText();
 					int start = 0,end = 0;
 					int counter = num;
@@ -175,13 +177,26 @@ public class Window {
 					}
 					discard.setText("Discard Pile: "+cards.substring(start, end));
 					Card.setText(cards.substring(0,start)+cards.substring(end));
-					window.setVisible(true);
+					setFinish();
 				}
 			});
 			panel.add(card);
 			
 		}
 		window.setVisible(true);
+	}
+	
+	public void setFinish() {
+		panel.removeAll();
+		outbutton = new JButton();
+		outbutton.setText("Go Out");
+		panel.add(outbutton);
+		finishbutton = new JButton();
+		finishbutton.setText("Finish");
+		outbutton.addActionListener(new outbutton());
+		finishbutton.addActionListener(new finishbutton());
+		panel.add(finishbutton);
+		panel.repaint();
 	}
 	
 	private void setHeaderStart() {
@@ -196,7 +211,7 @@ public class Window {
 		canvas.setSize(640,400);
 		canvas.add(label,BorderLayout.PAGE_START);
 		canvas.setBackground(Color.GREEN.darker());
-		msg.setText("Waiting for number of players");
+		msg.setText("Enter");
 		msg.setHorizontalAlignment(JLabel.CENTER);
 		canvas.add(msg,BorderLayout.PAGE_END);
 	}
@@ -208,10 +223,10 @@ public class Window {
 		panel.add(readybutton);
 	}
 	
-	public void setHeaderNotTurn(){
-		headerLabel.setText("Not Your Turn");
+	public void setHeaderNotTurn(String n){
+		headerLabel.setText(n+"'s Turn");
 		header.setBackground(Color.RED);
-		
+		System.out.println("SET HEADER NOT TURN");
 	}
 
 	
@@ -331,6 +346,13 @@ public class Window {
 				client.sendMessageVoid("Ready");
 				msg.setText("Please enter your Player Name (20 characters max)");
 				setName();
+		  }
+	}  
+	class finishbutton implements ActionListener { 
+		  public void actionPerformed(ActionEvent e) {
+				client.sendMessageVoid("Finish");
+				msg.setText("Waiting for your turn");
+				panel.removeAll();
 		  }
 	}  
 		  

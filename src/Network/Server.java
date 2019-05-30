@@ -49,7 +49,6 @@ public class Server implements Runnable {
 		for (ClientHandler c : clients) {
 			try {
 				PrintWriter out = new PrintWriter(c.clientSocket.getOutputStream(),true);
-				System.out.println(c.clientSocket.toString());
 				out.println("Start"+Integer.toString(players));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -58,17 +57,20 @@ public class Server implements Runnable {
 		}
 	}
 	public void setTurn(Player player) {
-		System.out.println("PLAYER POSITION: "+player.getPosition());
+		System.out.println("PLAYER POSITION: "+player.getPosition()+ " Player Name: "+player.getName());
 		ClientHandler client = clients.get(player.getPosition());
 		try {
+			PrintWriter out = new PrintWriter(client.clientSocket.getOutputStream(),true);
+			out.println("Turn?");
+			out.println(true);
 			for (ClientHandler c : clients) {
-				System.out.println("SOCKET INFORMATION: "+clients.size()+c.getId());
-				PrintWriter out = new PrintWriter(client.clientSocket.getOutputStream(),true);
-				System.out.println("Turn? "+client.equals(c));
-				out.println("Turn?");
-				String bool = String.valueOf(client.equals(c));
-				System.out.print("BOOL: "+bool);
-				out.println(bool);
+				if (!c.equals(client)) {
+					System.out.println("CLIENTS "+clients.size()+clients.indexOf(c));
+					out = new PrintWriter(c.clientSocket.getOutputStream(),true);
+					out.println("Turn?");
+					out.println(false);
+					out.println(player.getName());
+				}
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -95,14 +97,25 @@ public class Server implements Runnable {
 		}
 	}
 	
-	public void setDiscard(Cards discard) {
+	public void sendMsg(String msg, int position) {
+		ClientHandler client = clients.get(position);
+		PrintWriter out;
+		try {
+			out = new PrintWriter(client.clientSocket.getOutputStream(),true);
+			out.println(msg);}
+		catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+	
+	public static void setDiscard(Cards discard) {
 		for (ClientHandler client: clients) {
 			PrintWriter out;
 			try {
 				out = new PrintWriter(client.clientSocket.getOutputStream(),true);
 				out.println("Discard:");
 				out.println(discard.getDisplay());
-				out.println("EndDiscard");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -162,7 +175,6 @@ public class Server implements Runnable {
 		
 		public ClientHandler(Socket socket) {
 			this.clientSocket=socket;
-			System.out.println(socket.toString());
 		}
 		
 		public void run() {
@@ -172,14 +184,14 @@ public class Server implements Runnable {
 				String inputLine;
 				Boolean discard = false;
 				while ((inputLine = in.readLine())!=null) {
-					System.out.println(inputLine);
+					System.out.println("Server InputLine: "+inputLine);
 					if (discard) {
 						if (!inputLine.isEmpty()) {
-							game.doDiscard(inputLine);
+							setDiscard(game.doDiscard(inputLine));
 							discard = false;
 						}
 					}
-					if (inputLine.contentEquals("Ready")){
+					else if (inputLine.contentEquals("Ready")){
 						i--;
 					}
 					else if (inputLine.contentEquals("Draw")||inputLine.contentEquals("Discard")) {
@@ -195,8 +207,14 @@ public class Server implements Runnable {
 							start= true;
 						}
 					}
+					else if (inputLine.startsWith("Finish")) {
+						game.endTurn();
+					}
+					else if (inputLine.startsWith("Out")) {
+						game.doOut();
+					}
 					else {
-						System.out.println("Incorrect");
+						System.out.println("No Catch");
 					}
 				}
 				in.close();
