@@ -12,7 +12,7 @@ public class Client implements Runnable{
 	
 	public void run() {
 		try {
-			startConnection("127.0.0.1",5000);
+			startConnection("69.138.11.135",5000);
 			setWindow(new Window(this));
 			new ServerHandler(clientSocket, window).start();
 		} catch (UnknownHostException e) {
@@ -67,6 +67,7 @@ public class Client implements Runnable{
 				while ((inputLine = in.readLine())!=null) {
 					System.out.println("THIS IS THE INPUTLINE: "+inputLine+mainSocket.toString());
 					if (inputLine.startsWith("Deal:")) {
+						window.clearCards();
 						deal = true;
 					}
 					else if (inputLine.endsWith("EndDeal")) {
@@ -82,14 +83,17 @@ public class Client implements Runnable{
 					else if (inputLine.startsWith("Draw:")) {
 						window.draw(inputLine.substring(5));
 					}
-					else if (inputLine.startsWith("Discard")){
-						
+					else if (inputLine.startsWith("Final")){
+						window.finalTurn();
 					}
 					else if (inputLine.startsWith("Out")) {
-						
+						window.setOut();
 					}
 					else if (inputLine.startsWith("NOTOUT")) {
-						window.setFinish();
+						window.Reset();
+					}
+					else if (inputLine.startsWith("Score:")) {
+						window.setScore(inputLine.substring(6));
 					}
 					else if (inputLine.startsWith("Turn?")) {
 						String temp = in.readLine();

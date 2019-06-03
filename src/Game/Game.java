@@ -1,5 +1,6 @@
 package Game;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import Network.Server;
 
@@ -14,13 +15,13 @@ public class Game {
 	public static int WILD = 20;
 	
 	
-	private List<Player> players; //should be in order by position
+	private List<Player> players; //should be in order by original position
+	private List<Player> playOrder; //ordered by play order this round
 	private volatile int playerCount;
 	private Deck deck;
 	public int round; //3-13
 	private List<Integer> score;
 	private boolean out;
-	private boolean out2;
 	private Server gameServer;
 	
 	private Player turn;
@@ -45,7 +46,14 @@ public class Game {
 		}
 		while (round<14) {
 			doRound();
+			try {
+				TimeUnit.SECONDS.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			round++;
+			playOrder.add(playOrder.remove(0));
 			collectCards();
 			deal(round);
 		}
@@ -60,9 +68,8 @@ public class Game {
 	
 	private void doRound() throws IOException{
 		out = false;
-		out2=false;
 		while (!out) {
-			for (Player player : players) {
+			for (Player player : playOrder) {
 				if (!out) {
 					turn = player;
 					setTurn(player);
@@ -72,6 +79,8 @@ public class Game {
 				}
 				}
 				}
+		playOut(turn);
+		
 }
 	
 	public Cards doDiscard(String i) throws IOException{
@@ -81,7 +90,7 @@ public class Game {
 	}
 	
 	public void endTurn() {
-		System.out.println("ENDING TURN");
+		System.out.println("ENDING TURN OUT = "+out);
 		Player player = turn;
 		synchronized(player) {
 			player.notify();
@@ -105,25 +114,15 @@ public class Game {
 		return null;
 		}
 	
-	public void doOut() throws IOException {
+	public boolean doOut(List<Integer> cards) throws IOException {
 		Player player = turn;
 		Referee referee = new Referee(round);
-		if (referee.out(player.getHand())) {
-			if (!out) {
-				out = true;
-				System.out.println("You are out. No points added");
-				System.out.println("Last hand for the remaining players");
-				playOut(player);
-			}
-			else {
-				System.out.println("You are out. No points added");
-				out2 = true;
-			}
+		List<Cards> hand = player.getHand();
+		List<Cards> subhand = new ArrayList<Cards>();
+		for (Integer i : cards) {
+			subhand.add(hand.get(i));
 		}
-		else {
-			gameServer.sendMsg("NOTOUT", player.getPosition());
-			System.out.println("Referee says no. Try Again");
-		}
+		return out = referee.isLegal(subhand);
 	}
 	
 	private void setTurn(Player player) throws IOException{
@@ -148,29 +147,28 @@ public class Game {
 		
 	}
 	
+	public int updateScore(List<Integer> cards) {
+		int temp = score.get(turn.getPosition());
+		Player player = turn;
+		List<Cards> hand = player.getHand();
+		for (Integer i : cards) {
+			temp+=hand.get(i).getValue();
+		}
+		score.set(turn.getPosition(), temp);
+		return temp;
+		
+	}
+	
 	private void playOut(Player p) throws IOException {
 		int i = players.indexOf(p)+1;
 		if (i==players.size()) {
 			i = 0;
 		}
-		Referee referee = new Referee(round);
 		for (int j = 1;j<players.size();j++) {
 			Player player = players.get(i);
+			gameServer.sendMsg("Final", i);
+			turn = player;
 			setTurn(player);
-			if (!out2) {
-				doDiscard("change");
-				System.out.println("Time to score your hand!");
-				i = i-1;
-				if (i<0) {
-					i = players.size()-1;
-				}
-				int temp = score.get(i-1);
-				int temp2 = referee.score(player.getHand());
-				temp += temp2;
-				score.set(i-1, temp);
-				System.out.println("Total points: "+temp+" Points added: "+temp2);
-				out2=false;
-			}
 			i++;
 			if (i==players.size()) {
 				i = 0;
@@ -197,17 +195,18 @@ public class Game {
 	
 	private void setGame() throws IOException {
 		System.out.println("Round: "+round);
+		playOrder = players;
 		deal(round);
 	}
 	
 	private void deal(int i) {
 		for (int j=0;j<i;j++) {
-			for (Player player : players) {
+			for (Player player : playOrder) {
 				player.draw(deck.deal());
 			}
 		}
 		Cards discard = deck.discard(deck.deal());
-		for (Player player : players) {
+		for (Player player : playOrder) {
 			System.out.println("Players: "+players.size());
 			System.out.println(player.getPosition());
 			gameServer.setDeal(player.getHand(),discard,player.getPosition());

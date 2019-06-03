@@ -12,7 +12,7 @@ public class Referee {
 		round = r;
 	}
 
-	public boolean out(List<Cards> cards) throws IOException {
+	/*public boolean out(List<Cards> cards) throws IOException {
 		boolean out = false;
 		int cardnum;
 		List<Cards> unused = cards;
@@ -77,7 +77,7 @@ public class Referee {
 			}
 		}
 		return out;
-	}
+	}*/
 	
 	public int score(List<Cards> cards) throws IOException  {
 		int i;
@@ -169,7 +169,8 @@ public class Referee {
 		return 0;
 	}
 	
-	private boolean isLegal(List<Cards> cards) {
+	
+	public boolean isLegal(List<Cards> cards) {
 		if (isRun(cards)||isBook(cards)) {
 			return true;
 		}

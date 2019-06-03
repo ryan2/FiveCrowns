@@ -6,7 +6,7 @@ import Network.*;
 import Graphics.Window;
 
 public class PiChallenge {
-/*
+/*     
 	public static void main(String[] args){
 		// TODO Auto-generated method stub PiDay2019 Challenge
 		System.out.println("Working R 2019");
@@ -33,7 +33,7 @@ public class PiChallenge {
 		}
 	}
 */
-	
+	//test runs
 	public static void main(String[] args) {
 		Server server = new Server();
 		(new Thread(server)).start();
@@ -50,6 +50,13 @@ public class PiChallenge {
 		}
 	}
 	
+	/*
+	//client runs
+	public static void main (String[] args) {
+		Client client = new Client();
+		(new Thread(client)).start();
+	}
+	*/
 	/*
 	public static void main(String[] args) {
 		Server server = new Server();

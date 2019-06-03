@@ -128,6 +128,7 @@ public class Server implements Runnable {
 	
 	public void start(int port) throws IOException {
 		server = new ServerSocket(port);
+		System.out.println("SERVER RUNNING");
 		ready=false;
 		server.setSoTimeout(3000);
 		while (!ready||players==0) {
@@ -182,7 +183,7 @@ public class Server implements Runnable {
 				out = new PrintWriter(clientSocket.getOutputStream(),true);
 				in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 				String inputLine;
-				Boolean discard = false;
+				boolean discard = false;
 				while ((inputLine = in.readLine())!=null) {
 					System.out.println("Server InputLine: "+inputLine);
 					if (discard) {
@@ -210,8 +211,59 @@ public class Server implements Runnable {
 					else if (inputLine.startsWith("Finish")) {
 						game.endTurn();
 					}
+					else if (inputLine.startsWith("Score")) {
+						int round  = game.round;
+
+						while (round>0) {
+							List<Integer> cards = new ArrayList<Integer>();
+							while (!(inputLine = in.readLine()).equals("Submit")) {
+								if (inputLine.equals("Done")) {
+									break;
+								}
+								cards.add(Integer.parseInt(inputLine));
+								System.out.println(cards);
+								round--;
+							}
+							if (inputLine.equals("Done")){
+								while (round>0) {
+									inputLine = in.readLine();
+									cards.add(Integer.parseInt(inputLine));
+									round--;
+								}
+								out.println("Score:"+game.updateScore(cards));
+								game.endTurn();
+								break;
+							}
+							else if (!game.doOut(cards)) {
+								out.println("NOTOUT");
+								break;
+							}
+							if (round==0) {
+								game.endTurn();
+								out.println("Out");
+							}
+						}
+					}
 					else if (inputLine.startsWith("Out")) {
-						game.doOut();
+						int round  = game.round;
+						while (round>0) {
+							List<Integer> cards = new ArrayList<Integer>();
+							while (!(inputLine = in.readLine()).equals("Submit")) {
+								System.out.println(inputLine);
+								cards.add(Integer.parseInt(inputLine));
+								System.out.println(cards);
+								round--;
+							}
+							if (!game.doOut(cards)) {
+								out.println("NOTOUT");
+								round+=1;
+								break;
+							}
+						}
+						if (round==0) {
+							game.endTurn();
+							out.println("Out");
+						}
 					}
 					else {
 						System.out.println("No Catch");

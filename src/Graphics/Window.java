@@ -24,6 +24,7 @@ public class Window {
 	JPanel header = new JPanel();
 	JPanel panel = new JPanel();
 	JPanel canvas = new JPanel(new BorderLayout());
+	JTable scoreboard = new JTable();
 	
 	JLabel headerLabel = new JLabel();
 	JLabel label = new JLabel();
@@ -44,11 +45,15 @@ public class Window {
 	JButton submitbutton;
 	JButton readybutton;
 	JButton finishbutton;
+	JButton scorebutton;
 	
 	public JTextField name = new JTextField(16);
 	boolean turn;
 	int player;
 	int round;
+	boolean finalTurn;
+	boolean finish = false;
+	boolean out;
 	
 	
 	public Window(Client c) {
@@ -58,7 +63,7 @@ public class Window {
 		window.setTitle("Five Crowns");
 		setStartWindow();
 		window.setVisible(true);
-		round = 3;
+		round = 2;
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
@@ -72,9 +77,20 @@ public class Window {
 		window.add(header, BorderLayout.NORTH);
 		window.add(panel,BorderLayout.SOUTH);
 		window.add(canvas,BorderLayout.CENTER);
+		window.add(scoreboard,BorderLayout.EAST);
 		canvas.add(Card, BorderLayout.CENTER);
 		canvas.add(discard,BorderLayout.LINE_START);
 		
+	}
+	
+	public void Reset() {
+		msg.setText("Try Again");
+		if (finish) {
+			setFinish();
+		}
+		else {
+			doTurn();
+		}
 	}
 	
 	public void setPlayer(int i) {
@@ -90,6 +106,10 @@ public class Window {
 		header.setBackground(Color.RED);
 		header.add(headerLabel);
 		
+	}
+	
+	public void finalTurn() {
+		finalTurn = true;
 	}
 	
 	public void deal(String card) {
@@ -114,15 +134,51 @@ public class Window {
 		}
 	
 	public void setHeaderTurn(){
-		headerLabel.setText("Your Turn");
-		header.setBackground(Color.MAGENTA);
-		
+		if (finalTurn) {
+			headerLabel.setText("Someone's out! Final Turn");
+			header.setBackground(Color.ORANGE);
+		}
+		else {
+			headerLabel.setText("Your Turn");
+			header.setBackground(Color.MAGENTA);	
+			msg.setText("Your Turn");
+		}
+	}
+	
+	public void clearCards() {
+		Card.setText("");
+		discard.setText("");
+		panel.removeAll();
+		finalTurn = false;
+		round+=1;
+		out = false;
 	}
 	
 	public void draw(String s) {
 		String temp = Card.getText();
 		Card.setText(temp+s);
 		doDiscard();
+	}
+	
+	public void setOut() {
+		msg.setText("You are out! Last turn for the remaining players");
+		panel.removeAll();
+		header.removeAll();
+		headerLabel.setText("Out! 0 Points Added");
+		header.setBackground(Color.PINK);
+		header.add(headerLabel);
+		window.repaint();
+		out = true;
+	}
+	
+	public void setScore(String score) {
+		msg.setText("Your score for this round: "+score+" Last turn for the remaining players");
+		panel.removeAll();
+		header.removeAll();
+		headerLabel.setText(score+" Points Added");
+		header.setBackground(Color.PINK);
+		header.add(headerLabel);
+		window.repaint();
 	}
 	
 	public void doTurn() {
@@ -142,8 +198,62 @@ public class Window {
 		panel.add(drawbutton);
 		panel.add(discardbutton);
 		panel.add(outbutton);
+		window.setVisible(true);		
+	}
+	
+	private void doOut(){
+		msg.setText("Select the cards for your book or run");
+		panel.removeAll();
+		for (int i = 1;i<=round;i++) {
+			int num =i-1;
+			JButton card = new JButton(Integer.toString(i));
+			card.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					System.out.println("Selected Card" + num);
+					client.sendMessageVoid(String.valueOf(num));
+					card.setEnabled(false);
+					card.setBackground(Color.BLUE);
+				}
+			});
+			panel.add(card);
+	}
+		submitbutton = new JButton();
+		submitbutton.setText("Submit");
+		submitbutton.addActionListener(new submitbutton());
+		panel.add(submitbutton);
+		panel.repaint();
 		window.setVisible(true);
-		
+		System.out.println("DOING OUT");
+	}
+	
+	private void doScore() {
+		msg.setText("Select the cards for your book or run");
+		panel.removeAll();
+		for (int i = 1;i<=round;i++) {
+			int num =i-1;
+			JButton card = new JButton(Integer.toString(i));
+			card.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					System.out.println("Selected Card" + num);
+					client.sendMessageVoid(String.valueOf(num));
+					card.setEnabled(false);
+					card.setBackground(Color.BLUE);
+				}
+			});
+			panel.add(card);
+	}
+		submitbutton = new JButton();
+		submitbutton.setText("Submit");
+		submitbutton.addActionListener(new submitbutton());
+		panel.add(submitbutton);
+		donebutton = new JButton();
+		donebutton.setText("Done");
+		donebutton.addActionListener(new donebutton());
+		panel.add(submitbutton);
+		panel.add(donebutton);
+		panel.repaint();
+		window.setVisible(true);
+		System.out.println("DOING Score");
 	}
 	
 	private void doDiscard() {
@@ -187,16 +297,26 @@ public class Window {
 	}
 	
 	public void setFinish() {
+		finish = true;
 		panel.removeAll();
 		outbutton = new JButton();
 		outbutton.setText("Go Out");
 		panel.add(outbutton);
-		finishbutton = new JButton();
-		finishbutton.setText("Finish");
 		outbutton.addActionListener(new outbutton());
-		finishbutton.addActionListener(new finishbutton());
-		panel.add(finishbutton);
+		if (finalTurn) {
+			scorebutton = new JButton();
+			scorebutton.setText("Score");
+			scorebutton.addActionListener(new scorebutton());
+			panel.add(scorebutton);
+		}
+		else {
+			finishbutton = new JButton();
+			finishbutton.setText("Finish");
+			finishbutton.addActionListener(new finishbutton());
+			panel.add(finishbutton);
+		}
 		panel.repaint();
+		window.setVisible(true);
 	}
 	
 	private void setHeaderStart() {
@@ -224,9 +344,12 @@ public class Window {
 	}
 	
 	public void setHeaderNotTurn(String n){
-		headerLabel.setText(n+"'s Turn");
-		header.setBackground(Color.RED);
-		System.out.println("SET HEADER NOT TURN");
+		if (!out) {
+			headerLabel.setText(n+"'s Turn");
+			header.setBackground(Color.RED);
+			msg.setText("Waiting for your turn");
+			System.out.println("SET HEADER NOT TURN");
+		}
 	}
 
 	
@@ -272,12 +395,14 @@ public class Window {
 	
 	class donebutton implements ActionListener { 
 		  public void actionPerformed(ActionEvent e) {
-				try {
-					client.sendMessage("Done");
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				client.sendMessageVoid("Done");
+				for (Component button : panel.getComponents()) {
+					if (button.isEnabled()==true||button.getBackground()==Color.blue){
+						if (!(button.equals(donebutton)||button.equals(submitbutton))){
+							((AbstractButton) button).doClick();
+						}
+					}
+}
 		  }
 	}
 	
@@ -312,22 +437,18 @@ public class Window {
 	
 	class outbutton implements ActionListener { 
 		  public void actionPerformed(ActionEvent e) {
-				try {
-					client.sendMessage("Out");
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				client.sendMessageVoid("Out");
+				doOut();
 		  }
 	}  
 	
 	class submitbutton implements ActionListener { 
 		  public void actionPerformed(ActionEvent e) {
-				try {
-					client.sendMessage("Submit");
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				client.sendMessageVoid("Submit");
+				for (Component button : panel.getComponents()) {
+					if (button.getBackground()==Color.blue){
+						button.setBackground(null);
+					}
 				}
 		  }
 	}  
@@ -348,10 +469,17 @@ public class Window {
 				setName();
 		  }
 	}  
+	class scorebutton implements ActionListener { 
+		  public void actionPerformed(ActionEvent e) {
+				client.sendMessageVoid("Score");
+				doScore();
+		  }
+	}  
 	class finishbutton implements ActionListener { 
 		  public void actionPerformed(ActionEvent e) {
 				client.sendMessageVoid("Finish");
 				msg.setText("Waiting for your turn");
+				finish= false;
 				panel.removeAll();
 		  }
 	}  
