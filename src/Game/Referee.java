@@ -183,14 +183,31 @@ public class Referee {
 		if (cards.size()<3) {
 			return result;
 		}
-		if (!sameSuit(cards)) {
+		
+		List<Cards> cardList = new ArrayList<Cards>(cards);
+		int wilds = 0;
+		for (Cards card : cards) {
+			if (isWild(card)) {
+				cardList.remove(card);
+				wilds++;
+			}
+		}
+		
+		if (!sameSuit(cardList)) {
 			return result;
 		}
-		List<Cards> sortedCards = sortCards(cards);
+		List<Cards> sortedCards = sortCards(cardList);
 		int i = sortedCards.get(0).getValue();
 		for (Cards card : sortedCards) {
 			if (card.getValue()-i>1) {
-				return result;
+				int diff = card.getValue()-i-1;
+				wilds -= diff;
+				if (wilds<0) {
+					return result;
+				}
+				else {
+					i = card.getValue();
+				}
 			}
 			else {
 				i = card.getValue();
@@ -207,7 +224,15 @@ public class Referee {
 		if (cards.size()<3) {
 			return result;
 		}
-		if (!sameNumber(cards)) {
+		
+		List<Cards> cardList = new ArrayList<Cards>(cards);
+		for (Cards card : cards) {
+			if (isWild(card)) {
+				cardList.remove(card);
+			}
+		}
+		
+		if (!sameNumber(cardList)) {
 			return result;
 		}
 		result = true;

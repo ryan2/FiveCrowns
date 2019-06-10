@@ -3,6 +3,8 @@ import Graphics.Window;
 import java.io.*;
 
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Client implements Runnable{
 
@@ -74,7 +76,27 @@ public class Client implements Runnable{
 						deal = false;
 					}
 					else if (inputLine.startsWith("Start")) {
-						window.setPlayer(Integer.parseInt(inputLine.substring(5)));
+						int count = Integer.parseInt(inputLine.substring(5));
+						String[][] names = new String[count][2];
+						window.setPlayer(count);
+						for (int i = 0;i<count;i++) {
+							inputLine = in.readLine();
+							String[] name = {inputLine, "0"};
+							names[i] = name;
+						}
+						window.setScoreboard(names);
+					}
+					else if (inputLine.startsWith("Scoreboard")) {
+						int count = Integer.parseInt(inputLine.substring(10));
+						String[][] names = new String[count][2];
+						window.setPlayer(count);
+						for (int i = 0;i<count;i++) {
+							inputLine = in.readLine();
+							String s = in.readLine();
+							String[] name = {inputLine, s};
+							names[i] = name;
+						}
+						window.setScoreboard(names);
 					}
 					else if (inputLine.startsWith("Discard:")) {
 						String temp = in.readLine();

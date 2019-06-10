@@ -34,7 +34,7 @@ public class Game {
 		gameServer = server;
 		gameServer.setGame(this);
 		while (!server.isReady());
-		server.startGame();
+		server.startGame(players);
 		setGame();
 }
 	
@@ -45,9 +45,11 @@ public class Game {
 			score.add(0);
 		}
 		while (round<14) {
+			System.out.println("DECK SIZE: "+deck.cards().size());
 			doRound();
+			gameServer.updateScoreboard(players, score);
 			try {
-				TimeUnit.SECONDS.sleep(10);
+				TimeUnit.SECONDS.sleep(5);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -55,6 +57,7 @@ public class Game {
 			round++;
 			playOrder.add(playOrder.remove(0));
 			collectCards();
+			deck.shuffle();
 			deal(round);
 		}
 			}
@@ -122,7 +125,8 @@ public class Game {
 		for (Integer i : cards) {
 			subhand.add(hand.get(i));
 		}
-		return out = referee.isLegal(subhand);
+		out = referee.isLegal(subhand);
+		return out;
 	}
 	
 	private void setTurn(Player player) throws IOException{
@@ -160,17 +164,19 @@ public class Game {
 	}
 	
 	private void playOut(Player p) throws IOException {
-		int i = players.indexOf(p)+1;
-		if (i==players.size()) {
+		int i = playOrder.indexOf(p)+1;
+		if (i==playOrder.size()) {
 			i = 0;
 		}
-		for (int j = 1;j<players.size();j++) {
-			Player player = players.get(i);
-			gameServer.sendMsg("Final", i);
+		for (int j = 1;j<playOrder.size();j++) {
+			Player player = playOrder.get(i);
+			System.out.println("INDEX OF" + players.indexOf(player));
+			System.out.println("INDEX OF2" + playOrder.indexOf(player));
+			gameServer.sendMsg("Final", players.indexOf(player));
 			turn = player;
 			setTurn(player);
 			i++;
-			if (i==players.size()) {
+			if (i==playOrder.size()) {
 				i = 0;
 			}
 		}
@@ -191,11 +197,19 @@ public class Game {
 				System.out.println(card.getName());
 			}
 		}
+		for (Player player : playOrder) {
+			System.out.println("******************************PlayOrder*************************************");
+			System.out.println(player.getName());
+			for (Cards card: player.getHand()) {
+				System.out.println(card.getName());
+			}
+		}
 	}
 	
 	private void setGame() throws IOException {
 		System.out.println("Round: "+round);
-		playOrder = players;
+		playOrder = new ArrayList<Player>(players);
+		deck.shuffle();
 		deal(round);
 	}
 	

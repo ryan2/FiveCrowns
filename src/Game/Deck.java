@@ -64,7 +64,7 @@ public class Deck {
 	}
 	
 	public void shuffle() {
-		
+		Collections.shuffle(cards);
 	}
 	
 	public Cards deal() {
@@ -81,7 +81,7 @@ public class Deck {
 	}
 	
 	public void reset() {
-		cards.addAll(discard);
+		cards = generateGameDeck();
 		discard.clear();
 	}
 	

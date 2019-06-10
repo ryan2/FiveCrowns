@@ -11,6 +11,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import Network.Client;
 import javax.swing.*;
@@ -24,7 +26,8 @@ public class Window {
 	JPanel header = new JPanel();
 	JPanel panel = new JPanel();
 	JPanel canvas = new JPanel(new BorderLayout());
-	JTable scoreboard = new JTable();
+	JPanel scoreboard = new JPanel();
+	JTable table;
 	
 	JLabel headerLabel = new JLabel();
 	JLabel label = new JLabel();
@@ -83,6 +86,16 @@ public class Window {
 		
 	}
 	
+	public void setScoreboard(String[][] names) {
+		String[] columnNames = { "Player", "Score" }; 
+		table = new JTable(names, columnNames);
+		scoreboard.removeAll();
+		scoreboard.setLayout(new BorderLayout());
+		scoreboard.add(table.getTableHeader(),BorderLayout.PAGE_START);
+		scoreboard.add(table,BorderLayout.CENTER);
+		scoreboard.repaint();
+	}
+	
 	public void Reset() {
 		msg.setText("Try Again");
 		if (finish) {
@@ -134,6 +147,7 @@ public class Window {
 		}
 	
 	public void setHeaderTurn(){
+		System.out.println("FINAL TURN?" + finalTurn);
 		if (finalTurn) {
 			headerLabel.setText("Someone's out! Final Turn");
 			header.setBackground(Color.ORANGE);
@@ -172,7 +186,7 @@ public class Window {
 	}
 	
 	public void setScore(String score) {
-		msg.setText("Your score for this round: "+score+" Last turn for the remaining players");
+		msg.setText("Your score for this round: "+score+". Last turn for the remaining players");
 		panel.removeAll();
 		header.removeAll();
 		headerLabel.setText(score+" Points Added");
@@ -273,15 +287,25 @@ public class Window {
 					for (int i = 0;i<cards.length();i++) {
 						if (counter == 0) {
 							start = i;
-							if (cards.substring(i+1,i+2).matches("\\D")) {
+							if (cards.substring(i,i+1).contentEquals("J")) {
+								System.out.println("5 Cards");
+								end = i+5;
+							}
+							else if (cards.substring(i+1,i+2).matches("\\D")) {
+								System.out.println("2 Cards");
 								end = i+2;
 							}
 							else {
+								System.out.println("3 Cards");
 								end = i+3;
 							}
 							break;
 						}
-						if (cards.substring(i,i+1).matches("\\D")) {
+						if (cards.substring(i,i+1).contentEquals("J")) {
+							counter-=1;
+							i+=4;
+						}
+						else if (cards.substring(i,i+1).matches("\\D")) {
 							counter-=1;
 						}
 					}

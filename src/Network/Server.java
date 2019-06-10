@@ -41,7 +41,7 @@ public class Server implements Runnable {
 		return players;
 	}
 	
-	public void startGame() {
+	public void startGame(List<Player> playerList) {
 		if (clients.size()==players) {
 			start = true;
 		}
@@ -50,12 +50,32 @@ public class Server implements Runnable {
 			try {
 				PrintWriter out = new PrintWriter(c.clientSocket.getOutputStream(),true);
 				out.println("Start"+Integer.toString(players));
+				for (Player p : playerList) {
+					out.println(p.getName());
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
+	
+	public void updateScoreboard(List<Player> playerList, List<Integer> score) {
+		for (ClientHandler c : clients) {
+			try {
+				PrintWriter out = new PrintWriter(c.clientSocket.getOutputStream(),true);
+				out.println("Scoreboard"+Integer.toString(players));
+				for (int i = 0;i<playerList.size();i++) {
+					out.println(playerList.get(i).getName());
+					out.println(score.get(i));
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public void setTurn(Player player) {
 		System.out.println("PLAYER POSITION: "+player.getPosition()+ " Player Name: "+player.getName());
 		ClientHandler client = clients.get(player.getPosition());
