@@ -1,13 +1,11 @@
 package Game;
 import java.util.*;
-import java.net.Socket;
 
 public class Player {
 	
 	private String name;
 	private List<Cards> hand;
 	private int playPosition;
-	private Socket playerSocket;
 	
 	public Player(int play) {
 		playPosition = play;

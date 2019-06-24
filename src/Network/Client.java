@@ -3,8 +3,7 @@ import Graphics.Window;
 import java.io.*;
 
 import java.net.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 
 public class Client implements Runnable{
 
@@ -33,7 +32,7 @@ public class Client implements Runnable{
 	
 	
 	public String sendMessage(String msg) throws IOException {
-		BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+		BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(),StandardCharsets.UTF_8));
 		out.println(msg);
 		String resp=in.readLine();
 		return resp;
@@ -65,9 +64,8 @@ public class Client implements Runnable{
 			boolean deal = false;
 			try {
 				String inputLine;
-				BufferedReader in = new BufferedReader(new InputStreamReader(mainSocket.getInputStream()));
+				BufferedReader in = new BufferedReader(new InputStreamReader(mainSocket.getInputStream(),StandardCharsets.UTF_8));
 				while ((inputLine = in.readLine())!=null) {
-					System.out.println("THIS IS THE INPUTLINE: "+inputLine+mainSocket.toString());
 					if (inputLine.startsWith("Deal:")) {
 						window.clearCards();
 						deal = true;
@@ -108,6 +106,12 @@ public class Client implements Runnable{
 					else if (inputLine.startsWith("Final")){
 						window.finalTurn();
 					}
+					else if (inputLine.startsWith("Win!")) {
+						window.Winner(true, "");
+					}
+					else if (inputLine.startsWith("Lose!")) {
+						window.Winner(false, inputLine.substring(5));
+					}
 					else if (inputLine.startsWith("Out")) {
 						window.setOut();
 					}
@@ -121,12 +125,10 @@ public class Client implements Runnable{
 						String temp = in.readLine();
 						boolean turn = temp.contentEquals("true") ? true : false;
 						if (turn) {
-							System.out.println("Turn is True "+ window.name.getText());
 							window.setHeaderTurn();
 							window.doTurn();
 						}
 						else {
-							System.out.println("Turn is False "+ window.name.getText());
 							temp = in.readLine();
 							window.setHeaderNotTurn(temp);
 						}

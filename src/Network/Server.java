@@ -1,6 +1,7 @@
 package Network;
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.*;
@@ -20,7 +21,6 @@ public class Server implements Runnable {
 	private static volatile boolean start = false;
 	private static Game game;
 	private static List<ClientHandler> clients = new ArrayList<ClientHandler>();
-	private static ReentrantLock lock = new ReentrantLock();
 	
 	public void run() {
 		try {
@@ -41,6 +41,24 @@ public class Server implements Runnable {
 		return players;
 	}
 	
+	public void win(int client, String name) {
+		for (int i = 0;i<clients.size();i++) {
+			try {
+				ClientHandler c = clients.get(i);
+				PrintWriter out = new PrintWriter(new OutputStreamWriter(c.clientSocket.getOutputStream(),StandardCharsets.UTF_8),true);
+				if (i==client) {
+					out.println("Win!");
+				}
+				else {
+					out.println("Lose!"+name);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public void startGame(List<Player> playerList) {
 		if (clients.size()==players) {
 			start = true;
@@ -48,7 +66,7 @@ public class Server implements Runnable {
 		while (!start);
 		for (ClientHandler c : clients) {
 			try {
-				PrintWriter out = new PrintWriter(c.clientSocket.getOutputStream(),true);
+				PrintWriter out = new PrintWriter(new OutputStreamWriter(c.clientSocket.getOutputStream(),StandardCharsets.UTF_8),true);
 				out.println("Start"+Integer.toString(players));
 				for (Player p : playerList) {
 					out.println(p.getName());
@@ -63,7 +81,7 @@ public class Server implements Runnable {
 	public void updateScoreboard(List<Player> playerList, List<Integer> score) {
 		for (ClientHandler c : clients) {
 			try {
-				PrintWriter out = new PrintWriter(c.clientSocket.getOutputStream(),true);
+				PrintWriter out = new PrintWriter(new OutputStreamWriter(c.clientSocket.getOutputStream(),StandardCharsets.UTF_8),true);
 				out.println("Scoreboard"+Integer.toString(players));
 				for (int i = 0;i<playerList.size();i++) {
 					out.println(playerList.get(i).getName());
@@ -77,16 +95,14 @@ public class Server implements Runnable {
 	}
 	
 	public void setTurn(Player player) {
-		System.out.println("PLAYER POSITION: "+player.getPosition()+ " Player Name: "+player.getName());
 		ClientHandler client = clients.get(player.getPosition());
 		try {
-			PrintWriter out = new PrintWriter(client.clientSocket.getOutputStream(),true);
+			PrintWriter out = new PrintWriter(new OutputStreamWriter(client.clientSocket.getOutputStream(), StandardCharsets.UTF_8),true);
 			out.println("Turn?");
 			out.println(true);
 			for (ClientHandler c : clients) {
 				if (!c.equals(client)) {
-					System.out.println("CLIENTS "+clients.size()+clients.indexOf(c));
-					out = new PrintWriter(c.clientSocket.getOutputStream(),true);
+					out = new PrintWriter(new OutputStreamWriter(c.clientSocket.getOutputStream(),StandardCharsets.UTF_8),true);
 					out.println("Turn?");
 					out.println(false);
 					out.println(player.getName());
@@ -102,7 +118,7 @@ public class Server implements Runnable {
 		ClientHandler client = clients.get(position);
 		PrintWriter out;
 		try {
-			out = new PrintWriter(client.clientSocket.getOutputStream(),true);
+			out = new PrintWriter(new OutputStreamWriter(client.clientSocket.getOutputStream(),StandardCharsets.UTF_8),true);
 			out.println("Deal:");
 			for (int i =0;i<hand.size();i++) {
 				out.println(hand.get(i).getDisplay());
@@ -121,7 +137,7 @@ public class Server implements Runnable {
 		ClientHandler client = clients.get(position);
 		PrintWriter out;
 		try {
-			out = new PrintWriter(client.clientSocket.getOutputStream(),true);
+			out = new PrintWriter(new OutputStreamWriter(client.clientSocket.getOutputStream(),StandardCharsets.UTF_8),true);
 			out.println(msg);}
 		catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -133,7 +149,7 @@ public class Server implements Runnable {
 		for (ClientHandler client: clients) {
 			PrintWriter out;
 			try {
-				out = new PrintWriter(client.clientSocket.getOutputStream(),true);
+				out = new PrintWriter(new OutputStreamWriter(client.clientSocket.getOutputStream(),StandardCharsets.UTF_8),true);
 				out.println("Discard:");
 				out.println(discard.getDisplay());
 			} catch (IOException e) {
@@ -148,7 +164,6 @@ public class Server implements Runnable {
 	
 	public void start(int port) throws IOException {
 		server = new ServerSocket(port);
-		System.out.println("SERVER RUNNING");
 		ready=false;
 		server.setSoTimeout(3000);
 		while (!ready||players==0) {
@@ -185,7 +200,6 @@ public class Server implements Runnable {
 		if (inputLine!=null ) {
 			return inputLine;
 		}
-		System.out.println("InputStreamFailed");
 		return "";
 	}
 	
@@ -200,12 +214,11 @@ public class Server implements Runnable {
 		
 		public void run() {
 			try {
-				out = new PrintWriter(clientSocket.getOutputStream(),true);
+				out = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream(),StandardCharsets.UTF_8),true);
 				in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 				String inputLine;
 				boolean discard = false;
 				while ((inputLine = in.readLine())!=null) {
-					System.out.println("Server InputLine: "+inputLine);
 					if (discard) {
 						if (!inputLine.isEmpty()) {
 							setDiscard(game.doDiscard(inputLine));
@@ -241,7 +254,6 @@ public class Server implements Runnable {
 									break;
 								}
 								cards.add(Integer.parseInt(inputLine));
-								System.out.println(cards);
 								round--;
 							}
 							if (inputLine.equals("Done")){
@@ -269,9 +281,7 @@ public class Server implements Runnable {
 						while (round>0) {
 							List<Integer> cards = new ArrayList<Integer>();
 							while (!(inputLine = in.readLine()).equals("Submit")) {
-								System.out.println(inputLine);
 								cards.add(Integer.parseInt(inputLine));
-								System.out.println(cards);
 								round--;
 							}
 							if (!game.doOut(cards)) {
@@ -286,7 +296,6 @@ public class Server implements Runnable {
 						}
 					}
 					else {
-						System.out.println("No Catch");
 					}
 				}
 				in.close();

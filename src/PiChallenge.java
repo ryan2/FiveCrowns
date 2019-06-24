@@ -1,9 +1,9 @@
-import java.io.BufferedReader;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
+
 import Game.Game;
 import Network.*;
-import Graphics.Window;
+
 
 public class PiChallenge {
 /*     
@@ -34,6 +34,7 @@ public class PiChallenge {
 	}
 */
 	//test runs
+	/*
 	public static void main(String[] args) {
 		Server server = new Server();
 		(new Thread(server)).start();
@@ -41,6 +42,20 @@ public class PiChallenge {
 		(new Thread(client)).start();
 		Client client2 = new Client();
 		(new Thread(client2)).start();
+		try {
+			Game game = new Game(server);
+			game.play();	
+			}			
+		catch (IOException e) {
+			System.out.println(e);
+		}
+	}
+	*/
+	
+	//server runs
+	public static void main(String[] args) {
+		Server server = new Server();
+		(new Thread(server)).start();
 		try {
 			Game game = new Game(server);
 			game.play();	

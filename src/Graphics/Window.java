@@ -11,8 +11,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import Network.Client;
 import javax.swing.*;
@@ -82,8 +80,7 @@ public class Window {
 		window.add(canvas,BorderLayout.CENTER);
 		window.add(scoreboard,BorderLayout.EAST);
 		canvas.add(Card, BorderLayout.CENTER);
-		canvas.add(discard,BorderLayout.LINE_START);
-		
+		canvas.add(discard,BorderLayout.LINE_START);		
 	}
 	
 	public void setScoreboard(String[][] names) {
@@ -97,6 +94,8 @@ public class Window {
 	}
 	
 	public void Reset() {
+		panel.removeAll();
+		panel.repaint();
 		msg.setText("Try Again");
 		if (finish) {
 			setFinish();
@@ -114,12 +113,6 @@ public class Window {
 		
 	}
 	
-	private void setHeaderWait(){
-		headerLabel.setText("Other Player's Turn");
-		header.setBackground(Color.RED);
-		header.add(headerLabel);
-		
-	}
 	
 	public void finalTurn() {
 		finalTurn = true;
@@ -136,6 +129,17 @@ public class Window {
 	public void showDiscard(String card) {
 		discard.setText("Discard Pile: "+card);
 	}
+	
+	public void Winner(Boolean win, String name) {
+		if (win) {
+			headerLabel.setText("You Win!");
+			header.setBackground(Color.GREEN);
+		}
+		else {
+			headerLabel.setText("You Lose. "+name+" wins");
+			header.setBackground(Color.RED);
+		}
+	}
 
 	private void setName() {
 		panel.removeAll();
@@ -147,13 +151,12 @@ public class Window {
 		}
 	
 	public void setHeaderTurn(){
-		System.out.println("FINAL TURN?" + finalTurn);
 		if (finalTurn) {
-			headerLabel.setText("Someone's out! Final Turn");
+			headerLabel.setText("Someone's out! Final Turn Wild: "+round);
 			header.setBackground(Color.ORANGE);
 		}
 		else {
-			headerLabel.setText("Your Turn");
+			headerLabel.setText("Wild: "+round+" - Your Turn");
 			header.setBackground(Color.MAGENTA);	
 			msg.setText("Your Turn");
 		}
@@ -196,6 +199,7 @@ public class Window {
 	}
 	
 	public void doTurn() {
+		finish = false;
 		panel.removeAll();
 		drawbutton = new JButton();
 		discardbutton = new JButton();
@@ -223,7 +227,6 @@ public class Window {
 			JButton card = new JButton(Integer.toString(i));
 			card.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent evt) {
-					System.out.println("Selected Card" + num);
 					client.sendMessageVoid(String.valueOf(num));
 					card.setEnabled(false);
 					card.setBackground(Color.BLUE);
@@ -237,7 +240,6 @@ public class Window {
 		panel.add(submitbutton);
 		panel.repaint();
 		window.setVisible(true);
-		System.out.println("DOING OUT");
 	}
 	
 	private void doScore() {
@@ -248,7 +250,6 @@ public class Window {
 			JButton card = new JButton(Integer.toString(i));
 			card.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent evt) {
-					System.out.println("Selected Card" + num);
 					client.sendMessageVoid(String.valueOf(num));
 					card.setEnabled(false);
 					card.setBackground(Color.BLUE);
@@ -267,7 +268,6 @@ public class Window {
 		panel.add(donebutton);
 		panel.repaint();
 		window.setVisible(true);
-		System.out.println("DOING Score");
 	}
 	
 	private void doDiscard() {
@@ -279,7 +279,6 @@ public class Window {
 			JButton card = new JButton(Integer.toString(i));
 			card.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent evt) {
-					System.out.println("Selected Card" + num);
 					client.sendMessageVoid(String.valueOf(num));
 					String cards = Card.getText();
 					int start = 0,end = 0;
@@ -288,15 +287,13 @@ public class Window {
 						if (counter == 0) {
 							start = i;
 							if (cards.substring(i,i+1).contentEquals("J")) {
-								System.out.println("5 Cards");
 								end = i+5;
 							}
 							else if (cards.substring(i+1,i+2).matches("\\D")) {
-								System.out.println("2 Cards");
 								end = i+2;
 							}
 							else {
-								System.out.println("3 Cards");
+
 								end = i+3;
 							}
 							break;
@@ -369,10 +366,9 @@ public class Window {
 	
 	public void setHeaderNotTurn(String n){
 		if (!out) {
-			headerLabel.setText(n+"'s Turn");
+			headerLabel.setText("Wild: "+round+" - "+n+"'s Turn");
 			header.setBackground(Color.RED);
 			msg.setText("Waiting for your turn");
-			System.out.println("SET HEADER NOT TURN");
 		}
 	}
 

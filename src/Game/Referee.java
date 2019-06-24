@@ -93,7 +93,6 @@ public class Referee {
 		List<Cards> unused = cards;
 		while (!out) {
 			int size = cards.size();
-			int testsize;
 			List<Cards> used = new ArrayList<Cards>();
 			List<Cards> selected = new ArrayList<Cards>();
 			List<Cards> unused2 = unused;

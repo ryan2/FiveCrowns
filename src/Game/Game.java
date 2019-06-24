@@ -45,7 +45,6 @@ public class Game {
 			score.add(0);
 		}
 		while (round<14) {
-			System.out.println("DECK SIZE: "+deck.cards().size());
 			doRound();
 			gameServer.updateScoreboard(players, score);
 			try {
@@ -60,6 +59,15 @@ public class Game {
 			deck.shuffle();
 			deal(round);
 		}
+		int winningScore = 5000;
+		int winner = -1;
+		for (int i =0;i<players.size();i++) {
+			if (score.get(i)<winningScore) {
+				winningScore = score.get(i);
+				winner = i;
+			}
+		}
+		gameServer.win(winner, players.get(winner).getName());
 			}
 		
 	private void collectCards() {
@@ -93,7 +101,6 @@ public class Game {
 	}
 	
 	public void endTurn() {
-		System.out.println("ENDING TURN OUT = "+out);
 		Player player = turn;
 		synchronized(player) {
 			player.notify();
@@ -102,16 +109,12 @@ public class Game {
 	
 	public Cards doTurn(String response) throws IOException{
 		Player player = turn;
-		//BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-		//System.out.println("Response is: "+response);
 		switch (response) {
 		case "Draw":
 			Cards c = player.draw(deck.deal());
-			System.out.println("Card "+player.getHand().size()+": "+c.getName());
 			return c;
 		case "Discard":
 			c = player.draw(deck.drawDiscard());
-			System.out.println("Card "+player.getHand().size()+": "+c.getName());
 			return c;
 			}
 		return null;
@@ -131,14 +134,6 @@ public class Game {
 	
 	private void setTurn(Player player) throws IOException{
 		gameServer.setTurn(player);
-		System.out.println(player.getName()+"'s turn. Your Hand:");
-		int i =1;
-		for (Cards card : player.getHand()) {
-			System.out.println("Card "+Integer.toString(i)+": "+card.getName());
-			i++;
-		}
-		System.out.println("Discard Pile: "+deck.showDiscard().getName());
-		System.out.println("Answer 'Deck' or 'Discard' to draw from the Deck or Discard Pile. Answer 'Out' to go out");
 		try {
 			synchronized(player) {
 				player.wait();
@@ -146,9 +141,7 @@ public class Game {
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		System.out.println("Done waiting");
-		
+		}		
 	}
 	
 	public int updateScore(List<Integer> cards) {
@@ -170,8 +163,6 @@ public class Game {
 		}
 		for (int j = 1;j<playOrder.size();j++) {
 			Player player = playOrder.get(i);
-			System.out.println("INDEX OF" + players.indexOf(player));
-			System.out.println("INDEX OF2" + playOrder.indexOf(player));
 			gameServer.sendMsg("Final", players.indexOf(player));
 			turn = player;
 			setTurn(player);
@@ -207,7 +198,6 @@ public class Game {
 	}
 	
 	private void setGame() throws IOException {
-		System.out.println("Round: "+round);
 		playOrder = new ArrayList<Player>(players);
 		deck.shuffle();
 		deal(round);
@@ -221,8 +211,6 @@ public class Game {
 		}
 		Cards discard = deck.discard(deck.deal());
 		for (Player player : playOrder) {
-			System.out.println("Players: "+players.size());
-			System.out.println(player.getPosition());
 			gameServer.setDeal(player.getHand(),discard,player.getPosition());
 		}
 	}
