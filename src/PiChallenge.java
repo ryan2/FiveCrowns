@@ -2,6 +2,7 @@
 import java.io.IOException;
 
 import Game.Game;
+import Login.Login;
 import Network.*;
 
 
@@ -32,7 +33,13 @@ public class PiChallenge {
 			}
 		}
 	}
-*/
+	*/
+		public static void main (String[] args) {
+		Login login = new Login();
+		login.enter();
+	}
+	
+
 	//test runs
 	/*
 	public static void main(String[] args) {
@@ -51,7 +58,7 @@ public class PiChallenge {
 		}
 	}
 	*/
-	
+	/*
 	//server runs
 	public static void main(String[] args) {
 		Server server = new Server();
@@ -64,7 +71,7 @@ public class PiChallenge {
 			System.out.println(e);
 		}
 	}
-	
+	*/
 	/*
 	//client runs
 	public static void main (String[] args) {

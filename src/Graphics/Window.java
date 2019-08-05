@@ -62,6 +62,7 @@ public class Window {
 		window = new JFrame();
 		window.setSize(640,480);
 		window.setTitle("Five Crowns");
+		window.setLocationRelativeTo(null);
 		setStartWindow();
 		window.setVisible(true);
 		round = 2;

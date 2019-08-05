@@ -33,7 +33,6 @@ public class Game {
 		round = 3;
 		gameServer = server;
 		gameServer.setGame(this);
-		while (!server.isReady());
 		server.startGame(players);
 		setGame();
 }

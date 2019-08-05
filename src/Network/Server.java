@@ -4,11 +4,11 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.*;
 
 import Game.Cards;
 import Game.Game;
 import Game.Player;
+import Login.Login;
 
 
 
@@ -16,12 +16,16 @@ public class Server implements Runnable {
 
 	private ServerSocket server;
 	private static int players = 0;
-	private static int i=0; //users we are waiting on
-	private static volatile boolean ready;
-	private static volatile boolean start = false;
 	private static Game game;
+	private boolean start = false;
 	private static List<ClientHandler> clients = new ArrayList<ClientHandler>();
+	private Login login;
 	
+
+	public Server(Login l) {
+		login = l;
+	}
+
 	public void run() {
 		try {
 			start(5000);
@@ -36,8 +40,6 @@ public class Server implements Runnable {
 	}
 	
 	public int getPlayers() {
-		while (!ready||players==0) {
-		}
 		return players;
 	}
 	
@@ -60,10 +62,6 @@ public class Server implements Runnable {
 	}
 	
 	public void startGame(List<Player> playerList) {
-		if (clients.size()==players) {
-			start = true;
-		}
-		while (!start);
 		for (ClientHandler c : clients) {
 			try {
 				PrintWriter out = new PrintWriter(new OutputStreamWriter(c.clientSocket.getOutputStream(),StandardCharsets.UTF_8),true);
@@ -158,26 +156,24 @@ public class Server implements Runnable {
 		}
 	}
 	
-	public boolean isReady() {
-		return ready;
+	public void hostStart() {
+		start = true;
 	}
 	
 	public void start(int port) throws IOException {
 		server = new ServerSocket(port);
-		ready=false;
 		server.setSoTimeout(3000);
-		while (!ready||players==0) {
+		while (!start) {
 			if (players<7) {
+				System.out.println(players);
 				try {
 					new ClientHandler(server.accept()).start();
+					System.out.println("Accepted");
 					players++;
-					i++;
+					login.updatePlayer(players);
 				}
 				catch (java.net.SocketTimeoutException e) {
 				}
-			}
-			if (players>0&&i==0) {
-				ready = true;
 			}
 		}
 	}
@@ -226,7 +222,6 @@ public class Server implements Runnable {
 						}
 					}
 					else if (inputLine.contentEquals("Ready")){
-						i--;
 					}
 					else if (inputLine.contentEquals("Draw")||inputLine.contentEquals("Discard")) {
 						Cards c = game.doTurn(inputLine);
@@ -237,9 +232,6 @@ public class Server implements Runnable {
 						String name = inputLine.substring(5);
 						game.addPlayer(name);
 						clients.add(this);
-						if (clients.size()==players) {
-							start= true;
-						}
 					}
 					else if (inputLine.startsWith("Finish")) {
 						game.endTurn();
