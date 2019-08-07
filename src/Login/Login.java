@@ -13,7 +13,7 @@ import Network.Server;
 public class Login{
 	
 	private JFrame window;
-	private int i = 0;
+	private int i = 0; //host - 1; join - 0;
 	ready Ready;
 	private Login login = this;
 	
@@ -35,8 +35,8 @@ public class Login{
 		JButton b1 = new JButton("Host");
 		b1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				window.setVisible(false);
-				window.dispose();
+				//window.setVisible(false);
+				//window.dispose();
 				i = 1;
 				Ready = new ready();
 				(new Thread(Ready)).start();
@@ -45,10 +45,10 @@ public class Login{
 		JButton b2 = new JButton("Join");
 		b2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				window.setVisible(false);
-				window.dispose();
-				Ready = new ready();
-				(new Thread(Ready)).start();
+				//window.setVisible(false);
+				//window.dispose();
+				i=0;
+				(new Thread(new ready())).start();
 			}
 		});
 		panel.add(label);panel.add(b1);panel.add(b2);
@@ -67,16 +67,15 @@ public class Login{
 		private Server server;
 		
 		private void host() {
-			Server server = new Server(login);
+			server = new Server(login);
 			(new Thread(server)).start();
 			Client client = new Client();
 			(new Thread(client)).start();
 			try {
 				Game game = new Game(server);
-				game.play();	
-				}			
-			catch (IOException e) {
-				System.out.println(e);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
 		}
 		
@@ -94,7 +93,7 @@ public class Login{
 		
 		private void setWindow() {
 				window = new JFrame("Portal");
-				window.setSize(150,200);
+				window.setSize(200,200);
 				window.setLocationRelativeTo(null);
 				window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				JPanel panel = new JPanel();

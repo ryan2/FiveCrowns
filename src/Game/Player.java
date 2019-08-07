@@ -9,7 +9,7 @@ public class Player {
 	
 	public Player(int play) {
 		playPosition = play;
-		name = "Player "+Integer.toString(play);
+		name = "Player "+Integer.toString(play+1);
 		hand = new ArrayList<Cards>();
 	}
 	

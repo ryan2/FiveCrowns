@@ -17,7 +17,7 @@ public class Server implements Runnable {
 	private ServerSocket server;
 	private static int players = 0;
 	private static Game game;
-	private boolean start = false;
+	private volatile boolean start = false;
 	private static List<ClientHandler> clients = new ArrayList<ClientHandler>();
 	private Login login;
 	
@@ -67,6 +67,7 @@ public class Server implements Runnable {
 				PrintWriter out = new PrintWriter(new OutputStreamWriter(c.clientSocket.getOutputStream(),StandardCharsets.UTF_8),true);
 				out.println("Start"+Integer.toString(players));
 				for (Player p : playerList) {
+					System.out.println(p.getName()+"        HI!");
 					out.println(p.getName());
 				}
 			} catch (IOException e) {
@@ -176,6 +177,12 @@ public class Server implements Runnable {
 				}
 			}
 		}
+		try {
+			game.play();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
 	}
 	
 	public void stop() throws IOException {

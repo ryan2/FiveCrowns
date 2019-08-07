@@ -33,12 +33,11 @@ public class Game {
 		round = 3;
 		gameServer = server;
 		gameServer.setGame(this);
-		server.startGame(players);
-		setGame();
 }
 	
 	public void play() throws IOException{
-		
+		gameServer.startGame(players);
+		setGame();
 		score = new ArrayList<Integer>(players.size());
 		for (int j=0;j<players.size();j++) {
 			score.add(0);

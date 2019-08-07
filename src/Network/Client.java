@@ -13,7 +13,7 @@ public class Client implements Runnable{
 	
 	public void run() {
 		try {
-			startConnection("69.138.11.135",5000);
+			startConnection("127.0.0.1",5000);
 			setWindow(new Window(this));
 			new ServerHandler(clientSocket, window).start();
 		} catch (UnknownHostException e) {
@@ -66,6 +66,7 @@ public class Client implements Runnable{
 				String inputLine;
 				BufferedReader in = new BufferedReader(new InputStreamReader(mainSocket.getInputStream(),StandardCharsets.UTF_8));
 				while ((inputLine = in.readLine())!=null) {
+					System.out.println(inputLine);
 					if (inputLine.startsWith("Deal:")) {
 						window.clearCards();
 						deal = true;
@@ -79,6 +80,7 @@ public class Client implements Runnable{
 						window.setPlayer(count);
 						for (int i = 0;i<count;i++) {
 							inputLine = in.readLine();
+							System.out.println(inputLine);
 							String[] name = {inputLine, "0"};
 							names[i] = name;
 						}
