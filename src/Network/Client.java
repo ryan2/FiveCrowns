@@ -5,13 +5,13 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 
-public class Client implements Runnable{
+public class Client{
 
 	private Socket clientSocket;
 	private PrintWriter out;
 	private Window window;
 	
-	public void run() {
+	public void run1() {
 		try {
 			startConnection("127.0.0.1",5000);
 			setWindow(new Window(this));

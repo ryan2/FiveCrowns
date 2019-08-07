@@ -33,13 +33,13 @@ public class Login{
 		JPanel panel = new JPanel();
 		JLabel label = new JLabel("Host or Join?");
 		JButton b1 = new JButton("Host");
+		Ready = new ready();
 		b1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//window.setVisible(false);
 				//window.dispose();
 				i = 1;
-				Ready = new ready();
-				(new Thread(Ready)).start();
+				Ready.run1();
 			}
 		});
 		JButton b2 = new JButton("Join");
@@ -48,7 +48,7 @@ public class Login{
 				//window.setVisible(false);
 				//window.dispose();
 				i=0;
-				(new Thread(new ready())).start();
+				Ready.run1();
 			}
 		});
 		panel.add(label);panel.add(b1);panel.add(b2);
@@ -60,7 +60,7 @@ public class Login{
 		Ready.updatePlayer(count);
 	}
 
-	private class ready implements Runnable{
+	private class ready{
 
 		private JFrame window;
 		private JLabel label;
@@ -70,7 +70,7 @@ public class Login{
 			server = new Server(login);
 			(new Thread(server)).start();
 			Client client = new Client();
-			(new Thread(client)).start();
+			client.run1();
 			try {
 				Game game = new Game(server);
 			} catch (IOException e1) {
@@ -81,7 +81,7 @@ public class Login{
 		
 		private void join() {
 			Client client = new Client();
-			(new Thread(client)).start();
+			client.run1();
 		}
 		
 		public void updatePlayer(int count) {
@@ -112,8 +112,8 @@ public class Login{
 			
 		}
 		
-		@Override
-		public void run() {
+
+		public void run1() {
 			// TODO Auto-generated method stub
 			if (i==1) {
 				setWindow();
