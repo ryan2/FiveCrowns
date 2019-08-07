@@ -11,23 +11,25 @@ public class Client{
 	private PrintWriter out;
 	private Window window;
 	
-	public void run1() {
+	public void run1(String ip) throws IOException {
 		try {
-			startConnection("127.0.0.1",5000);
+			startConnection(ip,5000);
 			setWindow(new Window(this));
 			new ServerHandler(clientSocket, window).start();
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
 		}
 	}
 	
-	public void startConnection(String ip, int port) throws UnknownHostException, IOException {
-		clientSocket = new Socket(ip,port);
-		out = new PrintWriter(clientSocket.getOutputStream(),true);
+	public void startConnection(String ip, int port) throws IOException {
+		try {
+			clientSocket = new Socket(ip,port);
+			out = new PrintWriter(clientSocket.getOutputStream(),true);	
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			throw e;
+		}
 	}
 	
 	

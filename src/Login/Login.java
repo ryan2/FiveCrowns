@@ -1,8 +1,12 @@
 package Login;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 
 import javax.swing.*;
 
@@ -27,18 +31,18 @@ public class Login{
 	
 	private void setWindow() {
 		window = new JFrame("Portal");
-		window.setSize(150,200);
+		window.setSize(500,500);
 		window.setLocationRelativeTo(null);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		JPanel panel = new JPanel();
 		JLabel label = new JLabel("Host or Join?");
 		JButton b1 = new JButton("Host");
-		Ready = new ready();
 		b1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//window.setVisible(false);
 				//window.dispose();
 				i = 1;
+				Ready = new ready();
 				Ready.run1();
 			}
 		});
@@ -48,7 +52,8 @@ public class Login{
 				//window.setVisible(false);
 				//window.dispose();
 				i=0;
-				Ready.run1();
+				ready tmp = new ready();
+				tmp.run1();
 			}
 		});
 		panel.add(label);panel.add(b1);panel.add(b2);
@@ -65,12 +70,21 @@ public class Login{
 		private JFrame window;
 		private JLabel label;
 		private Server server;
+		private String ip;
 		
 		private void host() {
 			server = new Server(login);
 			(new Thread(server)).start();
 			Client client = new Client();
-			client.run1();
+			try {
+				client.run1(InetAddress.getLocalHost().getHostAddress());
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			try {
 				Game game = new Game(server);
 			} catch (IOException e1) {
@@ -81,7 +95,42 @@ public class Login{
 		
 		private void join() {
 			Client client = new Client();
-			client.run1();
+			window = new JFrame("Portal");
+			window.setSize(500,500);
+			window.setLocationRelativeTo(null);
+			window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			JPanel panel = new JPanel();
+			label = new JLabel("Enter IP Address");
+			JTextField textfield= new JTextField();
+			textfield.setPreferredSize(new Dimension(200,30));
+			JButton b1 = new JButton("Enter");
+			b1.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ip = textfield.getText();
+					if (ip.isEmpty()) {
+						label.setText("Could not connect, try a different address");
+						label.repaint();
+					}
+					else {
+					joinIP(client, ip);
+					}
+				}
+			});
+			panel.add(label);panel.add(textfield);panel.add(b1);
+			window.add(panel);
+			window.setVisible(true);
+		}
+		
+		private void joinIP(Client client, String ip) {
+			try {
+				client.run1(ip);
+				window.dispose();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				label.setText("Could not connect, try a different address");
+				label.repaint();
+				e1.printStackTrace();
+			}
 		}
 		
 		public void updatePlayer(int count) {
