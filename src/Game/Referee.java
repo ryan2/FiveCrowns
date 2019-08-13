@@ -3,7 +3,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
-
+		
 public class Referee {
 
 	private int round;
@@ -168,14 +168,50 @@ public class Referee {
 		return 0;
 	}
 	
-	
+	public boolean isOut(List<Cards> cards){
+		if (cards.size()<6){
+			return isLegal(cards);
+		}
+		List<Cards> cardList = new ArrayList<Cards>(cards);
+		List<Cards> sortedCards = sortCards(cardList);
+		List<Cards> sortedSuits = sortSuits(cardList);
+		boolean result = false;
+		int num = cards.size();
+		int wilds = 0;
+		int maxsets = num/3; //7,2 ; 8,2 ;9,3 ;10,3 ;11,3;12,4;13,4
+		for (Cards card: cards){
+			if (isWild(card)){
+				wilds++;
+				num--;
+				cardList.remove(card);
+			}
+		}	
+		
+		return result;
+	}
+
 	public boolean isLegal(List<Cards> cards) {
 		if (isRun(cards)||isBook(cards)) {
 			return true;
 		}
 		else return false;
 	}
-	
+
+	private boolean isNeighbor(Cards c1, Cards c2){
+		if (isWild(c1)||isWild(c2)){
+			return true;
+		}
+		else{
+			if (java.lang.Math.abs(c1.getValue()-c2.getValue())>1){
+				return false;
+			}
+			else{
+				return true;
+			}
+		}
+
+	}
+
 	private boolean isRun(List<Cards> cards) {
 		boolean result = false;
 		
@@ -279,5 +315,12 @@ public class Referee {
 		List<Cards> result = cards;
 		result.sort(Comparator.comparing(Cards::getValue));
 		return result;
-				}
+		}
+	
+	private List<Cards> sortSuits(List<Cards> cards) {
+		List<Cards> result = sortCards(cards);
+		result.sort(Comparator.comparing(Cards::getSuit));
+		return result;
+		}
+	
 }
