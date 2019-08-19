@@ -1,9 +1,12 @@
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import Game.Game;
+import Game.*;
 import Login.Login;
 import Network.*;
+import Test.Test;
 
 
 public class PiChallenge {
@@ -33,10 +36,14 @@ public class PiChallenge {
 			}
 		}
 	}
+	
+		//Suits 0 = none, 1 = Club, 2 = Diamond, 3 = Heart, 4= Spade; 5 = Stars
+	//Value 3 - 10; 11 = J; 12 = Q; 13 = K; 14 = Joker;
 	*/
 		public static void main (String[] args) {
-		Login login = new Login();
-		login.enter();
+		//Login login = new Login();
+		//login.enter();
+			Test test = new Test();
 	}
 	
 
