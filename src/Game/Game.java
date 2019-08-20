@@ -118,15 +118,11 @@ public class Game {
 		return null;
 		}
 	
-	public boolean doOut(List<Integer> cards) throws IOException {
+	public boolean doOut() throws IOException {
 		Player player = turn;
 		Referee referee = new Referee(round);
 		List<Cards> hand = player.getHand();
-		List<Cards> subhand = new ArrayList<Cards>();
-		for (Integer i : cards) {
-			subhand.add(hand.get(i));
-		}
-		out = referee.isLegal(subhand);
+		out = referee.isOut2(hand);
 		return out;
 	}
 	

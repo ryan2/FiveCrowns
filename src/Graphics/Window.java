@@ -106,6 +106,22 @@ public class Window {
 		}
 	}
 	
+	public void Reset(Boolean bool) {
+		
+		panel.removeAll();
+		panel.repaint();
+		msg.setText("Try Again");
+		if (bool) {
+			msg.setText("Not Out!");
+		}
+		if (finish) {
+			setFinish();
+		}
+		else {
+			doTurn();
+		}
+	}
+	
 	public void setPlayer(int i) {
 		player = i;
 		msg.setText(Integer.toString(i)+" Players - "+name.getText());
@@ -459,7 +475,6 @@ public class Window {
 	class outbutton implements ActionListener { 
 		  public void actionPerformed(ActionEvent e) {
 				client.sendMessageVoid("Out");
-				doOut();
 		  }
 	}  
 	

@@ -265,7 +265,7 @@ public class Server implements Runnable {
 								game.endTurn();
 								break;
 							}
-							else if (!game.doOut(cards)) {
+							else if (!game.doOut()) {
 								out.println("NOTOUT");
 								break;
 							}
@@ -276,22 +276,12 @@ public class Server implements Runnable {
 						}
 					}
 					else if (inputLine.startsWith("Out")) {
-						int round  = game.round;
-						while (round>0) {
-							List<Integer> cards = new ArrayList<Integer>();
-							while (!(inputLine = in.readLine()).equals("Submit")) {
-								cards.add(Integer.parseInt(inputLine));
-								round--;
-							}
-							if (!game.doOut(cards)) {
-								out.println("NOTOUT");
-								round+=1;
-								break;
-							}
-						}
-						if (round==0) {
-							game.endTurn();
+						if (game.doOut()) {
 							out.println("Out");
+							game.endTurn();
+						}
+						else {
+							out.println("NOTOUT");
 						}
 					}
 					else {

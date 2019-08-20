@@ -276,6 +276,7 @@ public class Referee {
 
 				if (i == sortedCards.size()-1) {
 					if (isLegal(curr)) {
+						cardList.addAll(wildList);
 						return isOut2(cardList);
 					}
 				}
@@ -295,7 +296,7 @@ public class Referee {
 		}
 		cardList.addAll(curr);
 		curr.clear();
-		
+	
 		
 		int suit = sortedSuits.get(0).getSuit();
 		value = sortedSuits.get(0).getValue();
@@ -303,62 +304,97 @@ public class Referee {
 		for (int i =0;i<sortedSuits.size();i++) {
 			Cards card = sortedSuits.get(i);
 			if (card.getSuit()!=suit) {
-				if (curr.size()<3) {
+				if (curr.size()>2) {
+					cardList.addAll(wildList);
+					if (isLegal(curr)&&isOut2(cardList)) {
+						return true;
+					}
+					cardList.removeAll(wildList);
+				}
+				else{
 					for (int j = curr.size();j<3;j++) {
 						if (wilds==0) {
-							return false;
-						}
-						curr.add(wildList.remove(0));
-						wilds--;
+							for (int b=0;b<j-curr.size();b++) {
+								wilds++;
+								wildList.add(curr.remove(curr.size()-1));
+							}
+							break;
+							}
+						else {
+							curr.add(wildList.remove(0));
+							wilds--;
 					}
 				}
-				if (!isLegal(curr)) {
-					return false;
 				}
-				
+				for (int z = 0;z<curr.size();z++) {
+					if (isWild(curr.get(z))){
+						wildList.add(curr.get(z));
+					}
+					else {
+						cardList.add(curr.get(z));
+					}
+				}
 				suit = card.getSuit();
 				curr.clear();
 				curr.add(card);
 				cardList.remove(card);
 				value = card.getValue();
 				if (i==sortedSuits.size()-1) {
-					return isLegal(curr);
+					if (isLegal(curr)) {
+						cardList.addAll(wildList);
+						return isOut2(cardList);
+					}
 				}
-			}
+			
+				}
 			else {
 				int diff = card.getValue()-value;
-				if (diff==0&&i!=0) {
-					while (!isLegal(curr)) {
-						if (wilds==0) {
-							return false;
-						}
-						curr.add(wildList.remove(0));
-						wilds--;
+				if (curr.size()>2) {
+					cardList.addAll(wildList);
+					if (isLegal(curr)&&isOut2(cardList)) {
+						return true;
 					}
-					curr.clear();
+					cardList.removeAll(wildList);
+				}
+				if (diff==0&&i!=0) {
+					continue;
 				}
 				else if (diff>1) {
 					for (int j = diff;j>1;j--) {
 						if (wilds==0) {
-							if (!isLegal(curr)) {
-								return false;
+							for (int k =0;k<(diff-j);k++) {
+								wilds++;
+								wildList.add(curr.remove(curr.size()-1));
+							}
+							for (int z = 0;z<curr.size();z++) {
+								if (isWild(curr.get(z))){
+									wildList.add(curr.get(z));
+								}
+								else {
+									cardList.add(curr.get(z));
+								}
 							}
 							curr.clear();
 							break;
 						}
-						wilds--;
-						curr.add(wildList.remove(0));
+						else {
+							wilds--;
+							curr.add(wildList.remove(0));
+						}
 					}
 				}
 				curr.add(card);
 				cardList.remove(card);
 				value = card.getValue();
+				suit = card.getSuit();
 			}
 			if (i==sortedSuits.size()-1) {
-				return isLegal(curr);
+				if (isLegal(curr)) {
+					cardList.addAll(wildList);
+					return isOut2(cardList);
+				}
 			}
 		}
-		
 		return result;
 		
 	}

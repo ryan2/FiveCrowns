@@ -41,9 +41,9 @@ public class PiChallenge {
 	//Value 3 - 10; 11 = J; 12 = Q; 13 = K; 14 = Joker;
 	*/
 		public static void main (String[] args) {
-		//Login login = new Login();
-		//login.enter();
-			Test test = new Test();
+		Login login = new Login();
+		login.enter();
+			//Test test = new Test();
 	}
 	
 

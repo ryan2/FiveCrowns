@@ -120,7 +120,7 @@ public class Client{
 						window.setOut();
 					}
 					else if (inputLine.startsWith("NOTOUT")) {
-						window.Reset();
+						window.Reset(true);
 					}
 					else if (inputLine.startsWith("Score:")) {
 						window.setScore(inputLine.substring(6));
