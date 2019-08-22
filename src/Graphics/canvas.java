@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
 import java.util.Random;
 
 import javax.swing.JFrame;
@@ -17,7 +19,6 @@ import javax.swing.JPanel;
 
 class Surface extends JPanel implements ActionListener {
 
-	Shape circle;
 	private int i = 0;
     private final int DELAY = 150;
     private Timer timer;
@@ -56,7 +57,7 @@ class Surface extends JPanel implements ActionListener {
             g2d.drawLine(x, y, x, y);
         }
     }
-    
+    //Draw a Star
     public void drawStar(Graphics g,int mx) {
         int midX = mx;
         int midY = 300;
@@ -104,6 +105,32 @@ class Surface extends JPanel implements ActionListener {
         g.fillPolygon(triangleX, triangleY, triangleX.length);
     }
 
+    //draw a diamond
+    private void drawDiamond(Graphics g,int x, int y, int width, int height) {
+    	int[] diaX = {x+width/2,x+width,x+width/2,x};
+    	int[] diaY = {y, y+height/2, y+height, y+height/2};
+        g.setColor(Color.BLUE);
+    	g.fillPolygon(diaX,diaY, 4);
+    	
+    }
+    
+    
+    //heart
+    public class Heart extends Path2D.Double{
+    	public Heart(int x, int y, int width, int height){
+    		moveTo(x-2*width/18+2,y+height-2*height/3);
+    		lineTo(x+width+2*width/18-2,y+height-2*height/3);
+    		lineTo((x-2*width/18+x+width+2*width/18)/2,y+height);
+    		closePath();
+    		moveTo(x-width/12,y);
+    		curveTo(x+width/6, y+height/6, x+width/3, height/3, x+7*width/12, y+height/2);
+    		closePath();
+    		moveTo(x+5*width/12,y);
+    		curveTo(x+2*width/3,y+height/6,x+5*width/6,height/3, x+width+width/12,y+height/2);
+    		closePath();
+    		
+    	}
+    }
     @Override
     public void paintComponent(Graphics g) {
     	i+=1;
@@ -111,10 +138,21 @@ class Surface extends JPanel implements ActionListener {
     		i = -150;
     	}
         super.paintComponent(g);
-        doDrawing(g);
+        //doDrawing(g);
         drawHeart(g,100+i,100,50,50, Color.RED);
         drawStar(g,125+i);
+        drawDiamond(g,100,200,50,50);
+        Heart heart = new Heart(100+i,100,50,50);
+        Graphics2D g2d = (Graphics2D) g.create();
+        AffineTransform at = AffineTransform.getTranslateInstance(0, 0);
+        Shape shape = at.createTransformedShape(heart);
+        g2d.setColor(Color.RED);
+        g2d.fill(shape);
+        g2d.setColor(Color.DARK_GRAY);
+        g2d.draw(shape);
+        g2d.dispose();
     }
+    
 
     @Override
     public void actionPerformed(ActionEvent e) {
